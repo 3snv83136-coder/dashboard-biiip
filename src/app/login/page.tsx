@@ -8,8 +8,8 @@ import { FormEvent, Suspense, useState } from "react";
 function LoginForm() {
   const router = useRouter();
   const params = useSearchParams();
-  const [email, setEmail] = useState("admin@biiip.local");
-  const [password, setPassword] = useState("biiip2026");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -53,6 +53,7 @@ function LoginForm() {
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          autoComplete="username"
           required
         />
       </div>
@@ -67,6 +68,7 @@ function LoginForm() {
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          autoComplete="current-password"
           required
         />
       </div>
@@ -76,12 +78,6 @@ function LoginForm() {
       <Button type="submit" className="w-full" disabled={loading}>
         {loading ? "Connexion…" : "Entrer dans la cave"}
       </Button>
-
-      <div className="rounded-xl bg-black/20 p-3 text-xs text-muted">
-        <p className="mb-1 font-semibold text-white/80">Comptes démo</p>
-        <p>admin@biiip.local · staff@biiip.local · leo@biiip.local</p>
-        <p>Mot de passe : biiip2026</p>
-      </div>
     </form>
   );
 }

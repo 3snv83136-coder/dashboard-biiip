@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import { useMemo, useState } from "react";
 
 const TITLES: Record<string, string> = {
+  "/accueil": "Accueil",
   "/calendrier": "Calendrier / Planning",
   "/artistes": "Artistes",
   "/documents": "Documents",

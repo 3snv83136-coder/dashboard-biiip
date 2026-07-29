@@ -20,7 +20,7 @@ export default auth((req) => {
 
   if (session && path === "/login") {
     const dest =
-      session.user.role === "artist" ? "/mon-espace" : "/calendrier";
+      session.user.role === "artist" ? "/mon-espace" : "/accueil";
     return NextResponse.redirect(new URL(dest, req.nextUrl.origin));
   }
 

@@ -90,6 +90,11 @@ export function Sidebar({
                     : "text-muted hover:bg-white/5 hover:text-white"
                 )}
               >
+                <span
+                  className="h-2.5 w-2.5 shrink-0 rounded-sm"
+                  style={{ backgroundColor: item.color }}
+                  aria-hidden
+                />
                 <Icon size={18} />
                 {item.label}
               </Link>

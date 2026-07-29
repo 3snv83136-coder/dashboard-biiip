@@ -5,5 +5,5 @@ export default async function HomePage() {
   const session = await auth();
   if (!session?.user) redirect("/login");
   if (session.user.role === "artist") redirect("/mon-espace");
-  redirect("/calendrier");
+  redirect("/accueil");
 }

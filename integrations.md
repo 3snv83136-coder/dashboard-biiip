@@ -51,7 +51,7 @@
 
 ## 6. Google — avis
 - **Rôle** : simple **lien** vers la fiche pour laisser un avis. Pas d'API Google Business.
-- Lien de dépôt d'avis : `https://maps.google.com/?q=Biiip+Comedy+Club+Toulon&action=write-review` (ou le lien court `g.page` si disponible).
+- Lien de dépôt d'avis : `https://g.page/r/CQVV3gGN7QSuEAE/review`
 - Injecté dans le `message_body` des `review_requests`.
 
 ## 7. Billetweb (billetterie externe)

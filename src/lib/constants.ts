@@ -7,7 +7,7 @@ import type {
 } from "./types";
 
 export const GOOGLE_REVIEW_URL =
-  "https://maps.google.com/?q=Biiip+Comedy+Club+Toulon&action=write-review";
+  "https://g.page/r/CQVV3gGN7QSuEAE/review";
 
 export const DEFAULT_CAPACITY = 19;
 
@@ -52,15 +52,16 @@ export const CONTACT_SOURCE_LABELS: Record<ContactSource, string> = {
 };
 
 export const STAFF_NAV = [
-  { href: "/calendrier", label: "Calendrier", icon: "calendar" },
-  { href: "/artistes", label: "Artistes", icon: "users" },
-  { href: "/documents", label: "Documents", icon: "file" },
-  { href: "/contacts", label: "Contacts", icon: "contact" },
-  { href: "/avis", label: "Avis Google", icon: "star" },
-  { href: "/medias", label: "Médias", icon: "image" },
-  { href: "/reglages", label: "Réglages", icon: "settings" },
+  { href: "/accueil", label: "Accueil", icon: "home", color: "#e94560" },
+  { href: "/calendrier", label: "Calendrier", icon: "calendar", color: "#00d9ff" },
+  { href: "/artistes", label: "Artistes", icon: "users", color: "#ffb703" },
+  { href: "/documents", label: "Documents", icon: "file", color: "#3ddc97" },
+  { href: "/contacts", label: "Contacts", icon: "contact", color: "#a855f7" },
+  { href: "/avis", label: "Avis Google", icon: "star", color: "#ff6b35" },
+  { href: "/medias", label: "Médias", icon: "image", color: "#38bdf8" },
+  { href: "/reglages", label: "Réglages", icon: "settings", color: "#9aa0b4" },
 ] as const;
 
 export const ARTIST_NAV = [
-  { href: "/mon-espace", label: "Mon espace", icon: "home" },
+  { href: "/mon-espace", label: "Mon espace", icon: "home", color: "#e94560" },
 ] as const;
