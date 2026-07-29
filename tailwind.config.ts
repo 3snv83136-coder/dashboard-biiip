@@ -9,8 +9,21 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        background: "var(--background)",
-        foreground: "var(--foreground)",
+        night: "#1a1a2e",
+        panel: "#16213e",
+        neon: "#e94560",
+        cyan: "#00d9ff",
+        muted: "#9aa0b4",
+        success: "#3ddc97",
+        warn: "#ffb703",
+      },
+      fontFamily: {
+        sans: ["var(--font-manrope)", "system-ui", "sans-serif"],
+        display: ["var(--font-syne)", "system-ui", "sans-serif"],
+      },
+      boxShadow: {
+        neon: "0 0 24px rgba(233, 69, 96, 0.35)",
+        cyan: "0 0 24px rgba(0, 217, 255, 0.25)",
       },
     },
   },

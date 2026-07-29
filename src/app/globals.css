@@ -3,25 +3,42 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --night: #1a1a2e;
+  --panel: #16213e;
+  --neon: #e94560;
+  --cyan: #00d9ff;
+  --text: #f5f5f7;
+  --muted: #9aa0b4;
+  --success: #3ddc97;
+  --warn: #ffb703;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html,
+body {
+  min-height: 100%;
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  color: var(--text);
+  background:
+    radial-gradient(ellipse 80% 50% at 10% -10%, rgba(233, 69, 96, 0.18), transparent 50%),
+    radial-gradient(ellipse 60% 40% at 90% 0%, rgba(0, 217, 255, 0.12), transparent 45%),
+    var(--night);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #2a3555 transparent;
 }
 
 @layer utilities {
-  .text-balance {
-    text-wrap: balance;
+  .panel {
+    @apply rounded-2xl border border-white/10 bg-panel/90 backdrop-blur;
+  }
+  .input-field {
+    @apply w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2.5 text-sm text-[var(--text)] outline-none transition placeholder:text-muted focus:border-cyan/60 focus:ring-1 focus:ring-cyan/40;
+  }
+  .label-field {
+    @apply mb-1.5 block text-xs font-medium uppercase tracking-wide text-muted;
   }
 }
