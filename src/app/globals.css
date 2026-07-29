@@ -3,12 +3,13 @@
 @tailwind utilities;
 
 :root {
-  --night: #1a1a2e;
-  --panel: #16213e;
+  --night: #051a3a;
+  --panel: #0a274f;
   --neon: #e94560;
   --cyan: #00d9ff;
+  --electric: #1e5eff;
   --text: #f5f5f7;
-  --muted: #9aa0b4;
+  --muted: #9eb6d4;
   --success: #3ddc97;
   --warn: #ffb703;
 }
@@ -21,22 +22,24 @@ body {
 body {
   color: var(--text);
   background:
-    radial-gradient(ellipse 80% 50% at 10% -10%, rgba(233, 69, 96, 0.18), transparent 50%),
-    radial-gradient(ellipse 60% 40% at 90% 0%, rgba(0, 217, 255, 0.12), transparent 45%),
-    var(--night);
+    radial-gradient(ellipse 90% 60% at 15% -5%, rgba(56, 189, 248, 0.35), transparent 55%),
+    radial-gradient(ellipse 70% 50% at 95% 10%, rgba(37, 99, 235, 0.55), transparent 50%),
+    radial-gradient(ellipse 50% 40% at 50% 100%, rgba(0, 217, 255, 0.2), transparent 45%),
+    linear-gradient(160deg, #031029 0%, #0b2a6e 40%, #1e5eff 100%);
+  background-attachment: fixed;
 }
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: #2a3555 transparent;
+  scrollbar-color: #2a4a8a transparent;
 }
 
 @layer utilities {
   .panel {
-    @apply rounded-2xl border border-white/10 bg-panel/90 backdrop-blur;
+    @apply rounded-2xl border border-white/10 bg-panel/85 backdrop-blur;
   }
   .input-field {
-    @apply w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2.5 text-sm text-[var(--text)] outline-none transition placeholder:text-muted focus:border-cyan/60 focus:ring-1 focus:ring-cyan/40;
+    @apply w-full rounded-xl border border-white/10 bg-black/25 px-3 py-2.5 text-sm text-[var(--text)] outline-none transition placeholder:text-muted focus:border-cyan/60 focus:ring-1 focus:ring-cyan/40;
   }
   .label-field {
     @apply mb-1.5 block text-xs font-medium uppercase tracking-wide text-muted;

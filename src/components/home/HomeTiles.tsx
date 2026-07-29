@@ -8,6 +8,7 @@ import {
   FileText,
   Home,
   ImageIcon,
+  Radio,
   Settings,
   Star,
   Users,
@@ -24,6 +25,7 @@ const ICONS = {
   image: ImageIcon,
   settings: Settings,
   home: Home,
+  radio: Radio,
 } as const;
 
 export function HomeTiles() {
@@ -35,33 +37,31 @@ export function HomeTiles() {
       : STAFF_NAV.filter((item) => item.href !== "/accueil");
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <div>
-        <h2 className="font-display text-2xl font-bold md:text-3xl">
+        <h2 className="font-display text-xl font-bold md:text-2xl">
           Bienvenue{data?.user?.name ? `, ${data.user.name.split(" ")[0]}` : ""}
         </h2>
-        <p className="mt-1 text-sm text-muted">
-          Choisis un univers pour démarrer.
-        </p>
+        <p className="mt-1 text-sm text-muted">Choisis un univers.</p>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+      <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6">
         {items.map((item) => {
           const Icon = ICONS[item.icon];
           return (
             <Link
               key={item.href}
               href={item.href}
-              className="group relative aspect-square overflow-hidden rounded-2xl p-4 transition duration-300 hover:scale-[1.03] hover:shadow-lg active:scale-[0.98]"
+              className="group relative flex aspect-square max-h-[104px] flex-col justify-between overflow-hidden rounded-xl p-2.5 transition duration-200 hover:scale-[1.04] active:scale-[0.98] sm:max-h-[112px] sm:p-3"
               style={{ backgroundColor: item.color }}
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-black/30" />
+              <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-black/25" />
               <div className="relative flex h-full flex-col justify-between text-night">
                 <Icon
-                  size={28}
+                  size={18}
                   className="opacity-90 transition group-hover:scale-110"
                 />
-                <p className="font-display text-lg font-bold leading-tight md:text-xl">
+                <p className="font-display text-[11px] font-bold leading-tight sm:text-xs">
                   {item.label}
                 </p>
               </div>

@@ -3,6 +3,8 @@ import type {
   BookingStatus,
   ContactSource,
   DocType,
+  RadioEpisodeStatus,
+  RadioGuestRole,
   ShowType,
 } from "./types";
 
@@ -51,9 +53,30 @@ export const CONTACT_SOURCE_LABELS: Record<ContactSource, string> = {
   import: "Import",
 };
 
+export const RADIO_EPISODE_STATUS_LABELS: Record<RadioEpisodeStatus, string> = {
+  draft: "Brouillon",
+  confirme: "Confirmée",
+  diffuse: "Diffusée",
+  archive: "Archivée",
+};
+
+export const RADIO_EPISODE_STATUS_COLORS: Record<RadioEpisodeStatus, string> = {
+  draft: "#9aa0b4",
+  confirme: "#00d9ff",
+  diffuse: "#3ddc97",
+  archive: "#64748b",
+};
+
+export const RADIO_GUEST_ROLE_LABELS: Record<RadioGuestRole, string> = {
+  invite: "Invité",
+  co_host: "Co-animateur",
+  chroniqueur: "Chroniqueur",
+};
+
 export const STAFF_NAV = [
   { href: "/accueil", label: "Accueil", icon: "home", color: "#e94560" },
   { href: "/calendrier", label: "Calendrier", icon: "calendar", color: "#00d9ff" },
+  { href: "/radio", label: "Émission radio", icon: "radio", color: "#f43f5e" },
   { href: "/artistes", label: "Artistes", icon: "users", color: "#ffb703" },
   { href: "/documents", label: "Documents", icon: "file", color: "#3ddc97" },
   { href: "/contacts", label: "Contacts", icon: "contact", color: "#a855f7" },

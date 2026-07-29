@@ -180,6 +180,50 @@ Prépare et publie des posts sur Instagram / Facebook / TikTok.
 
 ---
 
+## Collection `radio_episodes`
+Émissions de la web radio (Radioactive / Biiip).
+
+| Champ | Type | Description |
+|---|---|---|
+| `_id` | objectId | Identifiant |
+| `title` | string | Titre de l'émission |
+| `episode_date` | date | Date de diffusion |
+| `start_time` | string | Heure de début (ex. `19:00`) |
+| `end_time` | string | Heure de fin (ex. `20:00`) |
+| `episode_status` | enum | `draft` \| `confirme` \| `diffuse` \| `archive` |
+| `theme` | string | Thème / angle de l'épisode |
+| `synopsis` | string | Pitch court |
+| `host_name` | string | Animateur principal |
+| `conductor_content` | string | Conducteur de l'émission (déroulé) |
+| `playlist_notes` | string | Musiques / jingles / bed |
+| `technical_notes` | string | Notes techniques (micro, stream, etc.) |
+| `stream_url` | string | Lien de diffusion / replay |
+| `internal_notes` | string | Notes staff |
+| `created_by` | objectId | Réf. `users._id` |
+| `created_at` | date | Création |
+| `updated_at` | date | Mise à jour |
+
+---
+
+## Collection `radio_guests`
+Invités et intervenants liés à une émission radio.
+
+| Champ | Type | Description |
+|---|---|---|
+| `_id` | objectId | Identifiant |
+| `radio_episode_id` | objectId | Réf. `radio_episodes._id` |
+| `artist_id` | objectId \| null | Réf. `artists._id` si connu |
+| `guest_name` | string | Nom affiché (scène ou civil) |
+| `guest_role` | enum | `invite` \| `co_host` \| `chroniqueur` |
+| `slot_order` | number | Ordre de passage |
+| `segment_title` | string | Titre du segment |
+| `segment_duration_min` | number | Durée prévue (min) |
+| `talking_points` | string | Points à aborder / questions |
+| `created_at` | date | Création |
+| `updated_at` | date | Mise à jour |
+
+---
+
 ## Énumérations de référence (récap)
 
 - `role` : `admin`, `staff`, `artist`
@@ -193,3 +237,6 @@ Prépare et publie des posts sur Instagram / Facebook / TikTok.
 - `media_type` : `photo`, `video`
 - `platform` : `instagram`, `facebook`, `tiktok`
 - `post_status` : `draft`, `scheduled`, `published`, `failed`
+- `episode_status` : `draft`, `confirme`, `diffuse`, `archive`
+- `guest_role` : `invite`, `co_host`, `chroniqueur`
+

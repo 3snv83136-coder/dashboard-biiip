@@ -21,13 +21,9 @@ npm run dev
 
 Ouvre [http://localhost:3000](http://localhost:3000).
 
-### Comptes démo
+### Accès
 
-| Email | Rôle | Mot de passe |
-|---|---|---|
-| `admin@biiip.local` | admin | `biiip2026` |
-| `staff@biiip.local` | staff | `biiip2026` |
-| `leo@biiip.local` | artist | `biiip2026` |
+Mot de passe unique : `1076` (pas d’email).
 
 ## Écrans v1
 

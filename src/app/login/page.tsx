@@ -8,7 +8,6 @@ import { FormEvent, Suspense, useState } from "react";
 function LoginForm() {
   const router = useRouter();
   const params = useSearchParams();
-  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -18,13 +17,12 @@ function LoginForm() {
     setLoading(true);
     setError("");
     const res = await signIn("credentials", {
-      email,
       password,
       redirect: false,
     });
     setLoading(false);
     if (res?.error) {
-      setError("Identifiants incorrects. On réessaie ?");
+      setError("Code incorrect. On réessaie ?");
       return;
     }
     router.push(params.get("callbackUrl") || "/");
@@ -32,30 +30,15 @@ function LoginForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="panel w-full max-w-md space-y-4 p-6 md:p-8">
-      <div>
-        <p className="font-display text-3xl font-bold">
+    <form
+      onSubmit={onSubmit}
+      className="panel w-full max-w-sm space-y-5 p-6 md:p-8"
+    >
+      <div className="text-center">
+        <p className="font-display text-4xl font-bold tracking-tight">
           Biiip<span className="text-neon">.</span>
         </p>
-        <h1 className="mt-2 font-display text-xl font-semibold">Connexion</h1>
-        <p className="mt-1 text-sm text-muted">
-          Back-office interne — gérant, équipe & artistes.
-        </p>
-      </div>
-
-      <div>
-        <label className="label-field" htmlFor="email">
-          Email
-        </label>
-        <input
-          id="email"
-          className="input-field"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          autoComplete="username"
-          required
-        />
+        <p className="mt-2 text-sm text-muted">Entre le code d’accès</p>
       </div>
 
       <div>
@@ -64,19 +47,24 @@ function LoginForm() {
         </label>
         <input
           id="password"
-          className="input-field"
+          className="input-field text-center text-2xl tracking-[0.35em]"
           type="password"
+          inputMode="numeric"
+          autoComplete="current-password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          autoComplete="current-password"
+          placeholder="••••"
           required
+          autoFocus
         />
       </div>
 
-      {error ? <p className="text-sm text-neon">{error}</p> : null}
+      {error ? (
+        <p className="text-center text-sm text-neon">{error}</p>
+      ) : null}
 
       <Button type="submit" className="w-full" disabled={loading}>
-        {loading ? "Connexion…" : "Entrer dans la cave"}
+        {loading ? "…" : "Entrer"}
       </Button>
     </form>
   );

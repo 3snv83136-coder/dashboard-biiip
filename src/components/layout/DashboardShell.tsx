@@ -9,6 +9,7 @@ import { useMemo, useState } from "react";
 const TITLES: Record<string, string> = {
   "/accueil": "Accueil",
   "/calendrier": "Calendrier / Planning",
+  "/radio": "Émission radio",
   "/artistes": "Artistes",
   "/documents": "Documents",
   "/contacts": "Contacts",

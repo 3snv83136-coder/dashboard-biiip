@@ -38,7 +38,7 @@
 - [ ] Signature électronique des contrats GUSO
 - [ ] Gestion des cachets / export compta
 - [ ] Bon cadeau / suivi des ventes
-- [ ] Web radio « Radioactive » (déjà un concept sur le site)
+- [ ] Web radio « Radioactive » — calendrier émissions, conducteurs, invités ✅ *(en cours dans le dashboard)*
 - [ ] Application mobile native (seulement si la web-app ne suffit plus)
 
 ---

@@ -7,6 +7,8 @@ export type DocStatus = "draft" | "sent" | "signed";
 export type ContactSource = "soiree" | "billetweb" | "manuel" | "avis" | "import";
 export type SendStatus = "pending" | "sent" | "failed";
 export type MediaType = "photo" | "video";
+export type RadioEpisodeStatus = "draft" | "confirme" | "diffuse" | "archive";
+export type RadioGuestRole = "invite" | "co_host" | "chroniqueur";
 
 export interface User {
   _id: string;
@@ -119,6 +121,42 @@ export interface MediaAsset {
   site_slug: string;
   is_published: boolean;
   published_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Émission radio (Radioactive / web radio Biiip). */
+export interface RadioEpisode {
+  _id: string;
+  title: string;
+  episode_date: string;
+  start_time: string;
+  end_time: string;
+  episode_status: RadioEpisodeStatus;
+  theme: string;
+  synopsis: string;
+  host_name: string;
+  conductor_content: string;
+  playlist_notes: string;
+  technical_notes: string;
+  stream_url: string;
+  internal_notes: string;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Invité / intervenant d'une émission radio. */
+export interface RadioGuest {
+  _id: string;
+  radio_episode_id: string;
+  artist_id: string | null;
+  guest_name: string;
+  guest_role: RadioGuestRole;
+  slot_order: number;
+  segment_title: string;
+  segment_duration_min: number;
+  talking_points: string;
   created_at: string;
   updated_at: string;
 }

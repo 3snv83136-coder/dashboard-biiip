@@ -9,11 +9,12 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        night: "#1a1a2e",
-        panel: "#16213e",
+        night: "#051a3a",
+        panel: "#0a274f",
         neon: "#e94560",
         cyan: "#00d9ff",
-        muted: "#9aa0b4",
+        electric: "#1e5eff",
+        muted: "#9eb6d4",
         success: "#3ddc97",
         warn: "#ffb703",
       },

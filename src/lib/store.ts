@@ -5,6 +5,8 @@ import type {
   Contact,
   DocumentRecord,
   MediaAsset,
+  RadioEpisode,
+  RadioGuest,
   ReviewRequest,
   Show,
   ShowBooking,
@@ -20,6 +22,8 @@ export interface DataStore {
   contacts: Contact[];
   review_requests: ReviewRequest[];
   media_assets: MediaAsset[];
+  radio_episodes: RadioEpisode[];
+  radio_guests: RadioGuest[];
 }
 
 declare global {
@@ -301,6 +305,57 @@ export function createSeedStore(): DataStore {
   ];
 
   const review_requests: ReviewRequest[] = [];
+
+  const radioEpisode1: RadioEpisode = {
+    _id: createId("radio"),
+    title: "Radioactive — Live Cave",
+    episode_date: toDateString(addMonths(today, 0)),
+    start_time: "19:00",
+    end_time: "20:00",
+    episode_status: "confirme",
+    theme: "Humour & coulisses du stand-up",
+    synopsis: "Une heure avec les artistes du plateau de la semaine.",
+    host_name: "Gérant Biiip",
+    conductor_content:
+      "# Conducteur — Radioactive\n\n19:00 — Générique / jingle\n19:05 — Accueil & pitch\n19:15 — Invité 1 (set + interview)\n19:40 — Invité 2\n19:55 — Outro & annonces soirées",
+    playlist_notes: "Jingle Radioactive · bed soft pendant interviews",
+    technical_notes: "2 micros SM58 · stream OBS · monitoring casque",
+    stream_url: "",
+    internal_notes: "Première de la saison.",
+    created_by: admin._id,
+    created_at: ts,
+    updated_at: ts,
+  };
+
+  const radio_guests: RadioGuest[] = [
+    {
+      _id: createId("rguest"),
+      radio_episode_id: radioEpisode1._id,
+      artist_id: artist1._id,
+      guest_name: artist1.stage_name,
+      guest_role: "invite",
+      slot_order: 1,
+      segment_title: "Interview + extrait set",
+      segment_duration_min: 20,
+      talking_points: "Parcours · prochaines dates · anecdote cave",
+      created_at: ts,
+      updated_at: ts,
+    },
+    {
+      _id: createId("rguest"),
+      radio_episode_id: radioEpisode1._id,
+      artist_id: artist2._id,
+      guest_name: artist2.stage_name,
+      guest_role: "chroniqueur",
+      slot_order: 2,
+      segment_title: "Chronique jeunes talents",
+      segment_duration_min: 12,
+      talking_points: "Scène ouverte · conseils débutants",
+      created_at: ts,
+      updated_at: ts,
+    },
+  ];
+
   const media_assets: MediaAsset[] = [
     {
       _id: createId("media"),
@@ -333,6 +388,8 @@ export function createSeedStore(): DataStore {
     contacts,
     review_requests,
     media_assets,
+    radio_episodes: [radioEpisode1],
+    radio_guests,
   };
 }
 
@@ -340,7 +397,10 @@ export function getStore(): DataStore {
   if (!global.__biiipStore) {
     global.__biiipStore = createSeedStore();
   }
-  return global.__biiipStore;
+  const store = global.__biiipStore;
+  if (!store.radio_episodes) store.radio_episodes = [];
+  if (!store.radio_guests) store.radio_guests = [];
+  return store;
 }
 
 export function resetStore(): DataStore {

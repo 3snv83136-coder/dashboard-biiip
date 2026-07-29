@@ -10,6 +10,7 @@ import {
   Home,
   ImageIcon,
   LogOut,
+  Radio,
   Settings,
   Star,
   Users,
@@ -28,6 +29,7 @@ const ICONS = {
   image: ImageIcon,
   settings: Settings,
   home: Home,
+  radio: Radio,
 } as const;
 
 export function Sidebar({
