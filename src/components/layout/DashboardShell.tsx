@@ -1,5 +1,6 @@
 "use client";
 
+import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { TopBar } from "@/components/layout/TopBar";
 import type { Role } from "@/lib/types";
@@ -38,7 +39,7 @@ export function DashboardShell({
   }, [pathname]);
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen min-h-dvh w-full overflow-x-hidden">
       <Sidebar role={role} open={open} onClose={() => setOpen(false)} />
       <div className="flex min-w-0 flex-1 flex-col">
         <TopBar
@@ -47,7 +48,10 @@ export function DashboardShell({
           role={role}
           onMenu={() => setOpen(true)}
         />
-        <main className="flex-1 px-4 py-6 md:px-6">{children}</main>
+        <main className="safe-pb w-full flex-1 px-3 pt-4 sm:px-4 sm:pt-6 md:px-6">
+          <div className="mx-auto w-full max-w-7xl">{children}</div>
+        </main>
+        <MobileBottomNav role={role} onMore={() => setOpen(true)} />
       </div>
     </div>
   );

@@ -21,24 +21,25 @@ export function TopBar({
   onMenu: () => void;
 }) {
   return (
-    <header className="sticky top-0 z-30 flex items-center justify-between gap-4 border-b border-white/10 bg-night/80 px-4 py-4 backdrop-blur md:px-6">
-      <div className="flex items-center gap-3">
+    <header
+      className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-white/10 bg-night/85 px-3 py-3 backdrop-blur sm:gap-4 sm:px-4 sm:py-4 md:px-6"
+      style={{ paddingTop: "max(0.75rem, env(safe-area-inset-top))" }}
+    >
+      <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
         <button
-          className="rounded-xl bg-white/5 p-2 text-muted hover:bg-white/10 lg:hidden"
+          className="shrink-0 rounded-xl bg-white/5 p-2.5 text-muted hover:bg-white/10 lg:hidden"
           onClick={onMenu}
           aria-label="Ouvrir le menu"
         >
           <Menu size={18} />
         </button>
-        <div>
-          <h1 className="font-display text-xl font-semibold md:text-2xl">
-            {title}
-          </h1>
-        </div>
+        <h1 className="truncate font-display text-lg font-semibold sm:text-xl md:text-2xl">
+          {title}
+        </h1>
       </div>
-      <div className="text-right">
-        <p className="text-sm font-medium">{name}</p>
-        <p className="text-xs text-muted">{ROLE_LABEL[role]}</p>
+      <div className="max-w-[40%] shrink-0 text-right sm:max-w-none">
+        <p className="truncate text-xs font-medium sm:text-sm">{name}</p>
+        <p className="text-[10px] text-muted sm:text-xs">{ROLE_LABEL[role]}</p>
       </div>
     </header>
   );

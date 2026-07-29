@@ -12,14 +12,20 @@
   --muted: #9eb6d4;
   --success: #3ddc97;
   --warn: #ffb703;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-top: env(safe-area-inset-top, 0px);
 }
 
-html,
+html {
+  min-height: 100%;
+  overflow-x: hidden;
+  -webkit-text-size-adjust: 100%;
+}
+
 body {
   min-height: 100%;
-}
-
-body {
+  min-height: 100dvh;
+  overflow-x: hidden;
   color: var(--text);
   background:
     radial-gradient(ellipse 90% 60% at 15% -5%, rgba(56, 189, 248, 0.35), transparent 55%),
@@ -32,6 +38,13 @@ body {
 * {
   scrollbar-width: thin;
   scrollbar-color: #2a4a8a transparent;
+  box-sizing: border-box;
+}
+
+img,
+video {
+  max-width: 100%;
+  height: auto;
 }
 
 @layer utilities {
@@ -43,5 +56,31 @@ body {
   }
   .label-field {
     @apply mb-1.5 block text-xs font-medium uppercase tracking-wide text-muted;
+  }
+  .page-stack {
+    @apply w-full max-w-7xl space-y-4 sm:space-y-6;
+  }
+  .toolbar-row {
+    @apply flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between;
+  }
+  .calendar-scroll {
+    @apply -mx-1 overflow-x-auto overscroll-x-contain pb-1;
+  }
+  .calendar-frame {
+    @apply min-w-[560px] sm:min-w-0;
+  }
+  .modal-sheet {
+    @apply fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-0 sm:items-center sm:p-4;
+  }
+  .modal-panel {
+    @apply panel max-h-[92dvh] w-full max-w-lg overflow-y-auto rounded-b-none p-4 sm:rounded-2xl sm:p-5;
+  }
+  .safe-pb {
+    padding-bottom: calc(5.5rem + var(--safe-bottom));
+  }
+  @media (min-width: 1024px) {
+    .safe-pb {
+      padding-bottom: 1.5rem;
+    }
   }
 }

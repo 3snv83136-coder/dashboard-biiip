@@ -205,25 +205,25 @@ Outro · annonces soirées Biiip · générique de fin
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="toolbar-row">
         <div>
           <p className="text-sm text-muted">
             Web radio · pose une émission, construis le conducteur et les
             invités.
           </p>
         </div>
-        <Button onClick={() => setCreateOpen(true)}>
+        <Button className="w-full sm:w-auto" onClick={() => setCreateOpen(true)}>
           <Plus size={16} /> Nouvelle émission
         </Button>
       </div>
 
       {message ? <p className="text-sm text-success">{message}</p> : null}
 
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-start">
         <Button variant="ghost" onClick={() => setCursor(addMonths(cursor, -1))}>
           ←
         </Button>
-        <h2 className="min-w-[180px] text-center font-display text-lg font-semibold capitalize">
+        <h2 className="min-w-0 flex-1 text-center font-display text-base font-semibold capitalize sm:min-w-[180px] sm:flex-none sm:text-lg">
           {format(cursor, "MMMM yyyy", { locale: fr })}
         </h2>
         <Button variant="ghost" onClick={() => setCursor(addMonths(cursor, 1))}>
@@ -231,10 +231,11 @@ Outro · annonces soirées Biiip · générique de fin
         </Button>
       </div>
 
-      <div className="panel overflow-hidden">
-        <div className="grid grid-cols-7 border-b border-white/10 text-center text-xs uppercase tracking-wide text-muted">
+      <div className="calendar-scroll">
+        <div className="calendar-frame panel overflow-hidden">
+        <div className="grid grid-cols-7 border-b border-white/10 text-center text-[10px] uppercase tracking-wide text-muted sm:text-xs">
           {["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"].map((d) => (
-            <div key={d} className="px-1 py-3">
+            <div key={d} className="px-0.5 py-2 sm:px-1 sm:py-3">
               {d}
             </div>
           ))}
@@ -246,29 +247,33 @@ Outro · annonces soirées Biiip · générique de fin
             return (
               <div
                 key={key}
-                className={`min-h-[96px] border-b border-r border-white/5 p-1.5 md:min-h-[110px] md:p-2 ${
+                className={`min-h-[84px] border-b border-r border-white/5 p-1 sm:min-h-[96px] sm:p-1.5 md:min-h-[110px] md:p-2 ${
                   isSameMonth(day, cursor) ? "" : "opacity-35"
                 } ${isSameDay(day, new Date()) ? "bg-cyan/5" : ""}`}
               >
-                <div className="mb-1 text-xs text-muted">{format(day, "d")}</div>
+                <div className="mb-1 text-[10px] text-muted sm:text-xs">{format(day, "d")}</div>
                 <div className="space-y-1">
                   {dayEps.map((ep) => (
                     <button
                       key={ep._id}
                       onClick={() => setSelectedId(ep._id)}
-                      className="block w-full truncate rounded-md px-1.5 py-1 text-left text-[10px] font-semibold text-night md:text-xs"
+                      className="block w-full truncate rounded-md px-1 py-1 text-left text-[9px] font-semibold text-night sm:px-1.5 sm:text-[10px] md:text-xs"
                       style={{
                         backgroundColor:
                           RADIO_EPISODE_STATUS_COLORS[ep.episode_status],
                       }}
                     >
-                      {ep.start_time} · {ep.title}
+                      <span className="sm:hidden">{ep.start_time}</span>
+                      <span className="hidden sm:inline">
+                        {ep.start_time} · {ep.title}
+                      </span>
                     </button>
                   ))}
                 </div>
               </div>
             );
           })}
+        </div>
         </div>
       </div>
 
@@ -297,7 +302,7 @@ Outro · annonces soirées Biiip · générique de fin
       ) : null}
 
       {draft ? (
-        <div className="panel space-y-5 p-5">
+        <div className="panel space-y-5 overflow-hidden p-4 sm:p-5">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <h3 className="font-display text-xl font-semibold">{draft.title}</h3>
@@ -627,8 +632,8 @@ Outro · annonces soirées Biiip · générique de fin
       ) : null}
 
       {createOpen ? (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-4 md:items-center">
-          <div className="panel max-h-[90vh] w-full max-w-lg overflow-y-auto p-5">
+        <div className="modal-sheet">
+          <div className="modal-panel">
             <h3 className="font-display text-lg font-semibold">
               Nouvelle émission
             </h3>

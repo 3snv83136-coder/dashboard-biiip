@@ -97,8 +97,8 @@ export default function ArtistesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="relative min-w-[220px] flex-1">
+      <div className="toolbar-row">
+        <div className="relative min-w-0 flex-1">
           <Search
             size={16}
             className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted"
@@ -110,12 +110,18 @@ export default function ArtistesPage() {
             onChange={(e) => setQ(e.target.value)}
           />
         </div>
-        <Button variant="secondary" onClick={() => setImportOpen(true)}>
-          <ClipboardPaste size={16} /> Import WhatsApp
-        </Button>
-        <Button onClick={() => setOpen(true)}>
-          <Plus size={16} /> Ajouter un artiste
-        </Button>
+        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+          <Button
+            variant="secondary"
+            className="w-full sm:w-auto"
+            onClick={() => setImportOpen(true)}
+          >
+            <ClipboardPaste size={16} /> Import WhatsApp
+          </Button>
+          <Button className="w-full sm:w-auto" onClick={() => setOpen(true)}>
+            <Plus size={16} /> Ajouter un artiste
+          </Button>
+        </div>
       </div>
 
       {filtered.length ? (
@@ -161,8 +167,8 @@ export default function ArtistesPage() {
       )}
 
       {importOpen ? (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-4 md:items-center">
-          <div className="panel max-h-[90vh] w-full max-w-lg overflow-y-auto p-5">
+        <div className="modal-sheet">
+          <div className="modal-panel">
             <h3 className="font-display text-lg font-semibold">
               Import WhatsApp
             </h3>
@@ -208,8 +214,8 @@ export default function ArtistesPage() {
       ) : null}
 
       {open ? (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-4 md:items-center">
-          <div className="panel max-h-[90vh] w-full max-w-lg overflow-y-auto p-5">
+        <div className="modal-sheet">
+          <div className="modal-panel">
             <h3 className="font-display text-lg font-semibold">Nouvel artiste</h3>
             <div className="mt-4 grid gap-3">
               {(

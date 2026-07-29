@@ -55,11 +55,11 @@ export function Sidebar({
       />
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 flex w-72 flex-col border-r border-white/10 bg-night/95 p-4 backdrop-blur transition lg:static lg:translate-x-0",
+          "fixed inset-y-0 left-0 z-50 flex w-[min(18rem,88vw)] flex-col border-r border-white/10 bg-night/95 p-4 backdrop-blur transition lg:static lg:w-72 lg:translate-x-0",
           open ? "translate-x-0" : "-translate-x-full"
         )}
       >
-        <div className="mb-8 flex items-center justify-between px-2">
+        <div className="mb-6 flex items-center justify-between px-2 sm:mb-8">
           <div>
             <p className="font-display text-2xl font-bold tracking-tight">
               Biiip<span className="text-neon">.</span>
@@ -75,7 +75,7 @@ export function Sidebar({
           </button>
         </div>
 
-        <nav className="flex flex-1 flex-col gap-1">
+        <nav className="flex flex-1 flex-col gap-1 overflow-y-auto overscroll-contain">
           {items.map((item) => {
             const Icon = ICONS[item.icon];
             const active =

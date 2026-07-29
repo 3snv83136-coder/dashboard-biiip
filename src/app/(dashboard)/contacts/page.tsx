@@ -45,8 +45,8 @@ export default function ContactsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap gap-3">
-        <div className="relative min-w-[220px] flex-1">
+      <div className="toolbar-row">
+        <div className="relative min-w-0 flex-1">
           <Search
             size={16}
             className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted"
@@ -61,17 +61,19 @@ export default function ContactsPage() {
             }}
           />
         </div>
-        <Button variant="secondary" onClick={() => load(q)}>
-          Chercher
-        </Button>
-        <a href="/api/contacts/export">
-          <Button variant="ghost">
-            <Download size={16} /> Export CSV
+        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap">
+          <Button variant="secondary" className="w-full sm:w-auto" onClick={() => load(q)}>
+            Chercher
           </Button>
-        </a>
-        <Button onClick={() => setOpen(true)}>
-          <Plus size={16} /> Ajouter un contact
-        </Button>
+          <a href="/api/contacts/export" className="w-full sm:w-auto">
+            <Button variant="ghost" className="w-full">
+              <Download size={16} /> Export CSV
+            </Button>
+          </a>
+          <Button className="w-full sm:w-auto" onClick={() => setOpen(true)}>
+            <Plus size={16} /> Ajouter un contact
+          </Button>
+        </div>
       </div>
 
       {contacts.length ? (
@@ -128,8 +130,8 @@ export default function ContactsPage() {
       )}
 
       {open ? (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-4 md:items-center">
-          <div className="panel w-full max-w-lg p-5">
+        <div className="modal-sheet">
+          <div className="modal-panel">
             <h3 className="font-display text-lg font-semibold">Nouveau contact</h3>
             <div className="mt-4 grid gap-3">
               <div>

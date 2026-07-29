@@ -72,7 +72,13 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center px-4 py-10">
+    <div
+      className="flex min-h-screen min-h-dvh items-center justify-center px-4 py-8 sm:py-10"
+      style={{
+        paddingBottom: "max(2rem, env(safe-area-inset-bottom))",
+        paddingTop: "max(2rem, env(safe-area-inset-top))",
+      }}
+    >
       <Suspense>
         <LoginForm />
       </Suspense>
