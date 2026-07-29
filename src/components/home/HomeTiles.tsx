@@ -13,6 +13,7 @@ import {
   Star,
   Users,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 
@@ -37,31 +38,44 @@ export function HomeTiles() {
       : STAFF_NAV.filter((item) => item.href !== "/accueil");
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <div>
-        <h2 className="font-display text-xl font-bold md:text-2xl">
+        <h2 className="font-display text-2xl font-bold md:text-3xl">
           Bienvenue{data?.user?.name ? `, ${data.user.name.split(" ")[0]}` : ""}
         </h2>
         <p className="mt-1 text-sm text-muted">Choisis un univers.</p>
       </div>
 
-      <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
         {items.map((item) => {
           const Icon = ICONS[item.icon];
           return (
             <Link
               key={item.href}
               href={item.href}
-              className="group relative flex aspect-square max-h-[104px] flex-col justify-between overflow-hidden rounded-xl p-2.5 transition duration-200 hover:scale-[1.04] active:scale-[0.98] sm:max-h-[112px] sm:p-3"
-              style={{ backgroundColor: item.color }}
+              className="group relative aspect-[4/3] min-h-[140px] overflow-hidden rounded-2xl transition duration-300 hover:scale-[1.02] hover:shadow-lg active:scale-[0.99] sm:min-h-[160px] md:min-h-[180px]"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-black/25" />
-              <div className="relative flex h-full flex-col justify-between text-night">
-                <Icon
-                  size={18}
-                  className="opacity-90 transition group-hover:scale-110"
-                />
-                <p className="font-display text-[11px] font-bold leading-tight sm:text-xs">
+              <Image
+                src={item.image}
+                alt={item.label}
+                fill
+                className="object-cover transition duration-500 group-hover:scale-105"
+                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                unoptimized
+              />
+              <div
+                className="absolute inset-0 opacity-70 mix-blend-multiply transition group-hover:opacity-60"
+                style={{ backgroundColor: item.color }}
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent" />
+              <div className="relative flex h-full flex-col justify-between p-4 text-white">
+                <span
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-black/35 backdrop-blur-sm"
+                  style={{ boxShadow: `0 0 0 1px ${item.color}` }}
+                >
+                  <Icon size={18} />
+                </span>
+                <p className="font-display text-lg font-bold leading-tight drop-shadow md:text-xl">
                   {item.label}
                 </p>
               </div>
