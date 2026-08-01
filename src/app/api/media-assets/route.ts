@@ -21,23 +21,26 @@ export async function POST(req: Request) {
   const body = await req.json();
   const ts = nowIso();
   const file_url = String(body.file_url || "");
-  const alt_text = String(body.alt_text || "Photo Biiip Comedy Club");
+  const media_type = (body.media_type || "photo") as MediaType;
+  const title = String(body.title || "");
   const caption = String(body.caption || "");
+  const alt_text = String(body.alt_text || title || "Photo Biiip Comedy Club");
 
   const asset = {
     _id: createId("media"),
     show_id: body.show_id ? String(body.show_id) : null,
-    media_type: (body.media_type || "photo") as MediaType,
+    media_type,
     file_url,
     thumbnail_url: String(body.thumbnail_url || file_url),
+    title,
     alt_text,
     caption,
     seo_json_ld: {
       "@context": "https://schema.org",
-      "@type": "ImageObject",
-      name: caption || alt_text,
+      "@type": media_type === "video" ? "VideoObject" : "ImageObject",
+      name: title || caption || alt_text,
       contentUrl: file_url,
-      description: alt_text,
+      description: caption || alt_text,
     },
     site_slug: String(body.site_slug || "/galerie"),
     is_published: false,
@@ -48,7 +51,13 @@ export async function POST(req: Request) {
 
   if (!file_url) {
     return NextResponse.json(
-      { error: "L'URL du fichier est obligatoire" },
+      { error: "Le fichier est obligatoire" },
+      { status: 400 }
+    );
+  }
+  if (!title) {
+    return NextResponse.json(
+      { error: "Le titre est obligatoire" },
       { status: 400 }
     );
   }
