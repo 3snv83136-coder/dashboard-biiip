@@ -10,7 +10,7 @@ import {
 import { fileToJpegFile } from "@/lib/image-resize";
 import { localSiteStoryDraft } from "@/lib/site-story-draft";
 import type { MediaAsset, Show, SiteStory, SiteStoryFaq } from "@/lib/types";
-import { ExternalLink, Sparkles, Upload } from "lucide-react";
+import { ExternalLink, Sparkles, Trash2, Upload } from "lucide-react";
 import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 
@@ -401,6 +401,33 @@ export default function MediasPage() {
     }
   }
 
+  async function deleteStory(story: SiteStory) {
+    const title = story.h1 || story.title_en || story.slug;
+    const ok = window.confirm(
+      `Supprimer définitivement « ${title} » ?\n\nLa page disparaîtra du dashboard (et de l’aperçu). Cette action est irréversible.`
+    );
+    if (!ok) return;
+
+    setBusy(true);
+    setError("");
+    setMessage("");
+    try {
+      const res = await fetch(`/api/site-stories/${story._id}`, {
+        method: "DELETE",
+      });
+      const json = await readApiJson(res);
+      if (!res.ok) {
+        throw new Error(String(json.error || "Suppression impossible"));
+      }
+      setMessage("Page supprimée ✅");
+      await load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Suppression impossible");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   function updateFaq(index: number, field: keyof SiteStoryFaq, value: string) {
     setForm((prev) => {
       const faqs = [...prev.faqs];
@@ -614,6 +641,13 @@ export default function MediasPage() {
                   {story.is_published
                     ? "Repousser sur le site"
                     : "Pousser sur le site"}
+                </Button>
+                <Button
+                  variant="danger"
+                  disabled={busy}
+                  onClick={() => void deleteStory(story)}
+                >
+                  <Trash2 size={14} /> Supprimer
                 </Button>
               </div>
             </div>

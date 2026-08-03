@@ -215,6 +215,21 @@ export async function upsertSiteStory(story: SiteStory): Promise<void> {
   );
 }
 
+/** Supprime une page The Biiip Review. */
+export async function deleteSiteStory(story_id: string): Promise<boolean> {
+  const store = await loadStore();
+  if (!store.site_stories) store.site_stories = [];
+  const before = store.site_stories.length;
+  store.site_stories = store.site_stories.filter((s) => s._id !== story_id);
+  if (store.site_stories.length === before) return false;
+  global.__biiipStore = store;
+
+  if (!isMongoEnabled()) return true;
+  await connectMongo();
+  await SiteStoryModel.deleteOne({ _id: story_id });
+  return true;
+}
+
 /**
  * Charge le store, exécute le handler, puis persiste si Mongo.
  */
