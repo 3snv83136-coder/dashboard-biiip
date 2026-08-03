@@ -3,36 +3,21 @@
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import type { MediaAsset, MediaType, Show } from "@/lib/types";
-import { Upload } from "lucide-react";
 import Image from "next/image";
-import { useCallback, useEffect, useRef, useState } from "react";
-
-const emptyForm = {
-  file_url: "",
-  media_type: "photo" as MediaType,
-  title: "",
-  caption: "",
-  show_id: "",
-};
-
-function fileToDataUrl(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result));
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
+import { useCallback, useEffect, useState } from "react";
 
 export default function MediasPage() {
   const [assets, setAssets] = useState<MediaAsset[]>([]);
   const [shows, setShows] = useState<Show[]>([]);
-  const [form, setForm] = useState(emptyForm);
-  const [fileName, setFileName] = useState("");
+  const [form, setForm] = useState({
+    file_url: "",
+    alt_text: "",
+    caption: "",
+    show_id: "",
+    media_type: "photo" as MediaType,
+    site_slug: "/galerie",
+  });
   const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
-  const [saving, setSaving] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const load = useCallback(async () => {
     const res = await fetch("/api/media-assets");
@@ -45,44 +30,25 @@ export default function MediasPage() {
     void load();
   }, [load]);
 
-  async function onFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setError("");
-    const dataUrl = await fileToDataUrl(file);
-    setForm((f) => ({
-      ...f,
-      file_url: dataUrl,
-      media_type: file.type.startsWith("video/") ? "video" : "photo",
-    }));
-    setFileName(file.name);
-  }
-
   async function createAsset() {
-    setError("");
     setMessage("");
-    if (!form.file_url) {
-      setError("Choisis une photo ou une vidéo.");
-      return;
-    }
-    if (!form.title.trim()) {
-      setError("Mets un titre.");
-      return;
-    }
-    setSaving(true);
     const res = await fetch("/api/media-assets", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...form, site_slug: "/galerie" }),
+      body: JSON.stringify(form),
     });
-    setSaving(false);
     if (!res.ok) {
-      setError("Ça n'est pas passé. On réessaie ?");
+      setMessage("Ça n'est pas passé. On réessaie ?");
       return;
     }
-    setForm(emptyForm);
-    setFileName("");
-    if (fileInputRef.current) fileInputRef.current.value = "";
+    setForm({
+      file_url: "",
+      alt_text: "",
+      caption: "",
+      show_id: "",
+      media_type: "photo",
+      site_slug: "/galerie",
+    });
     setMessage("Média ajouté ✅");
     await load();
   }
@@ -100,26 +66,28 @@ export default function MediasPage() {
     <div className="space-y-6">
       <div className="panel grid gap-3 p-5 md:grid-cols-2">
         <div className="md:col-span-2">
-          <label className="label-field">Photo ou vidéo</label>
-          <label className="input-field flex cursor-pointer items-center gap-2 text-muted">
-            <Upload size={16} />
-            {fileName || "Choisir un fichier…"}
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*,video/*"
-              className="hidden"
-              onChange={onFileChange}
-            />
-          </label>
-        </div>
-        <div>
-          <label className="label-field">Titre</label>
+          <label className="label-field">URL du fichier</label>
           <input
             className="input-field"
-            value={form.title}
-            onChange={(e) => setForm({ ...form, title: e.target.value })}
-            placeholder="Plateau Biiip — samedi"
+            value={form.file_url}
+            onChange={(e) => setForm({ ...form, file_url: e.target.value })}
+            placeholder="https://..."
+          />
+        </div>
+        <div>
+          <label className="label-field">Texte alternatif (SEO)</label>
+          <input
+            className="input-field"
+            value={form.alt_text}
+            onChange={(e) => setForm({ ...form, alt_text: e.target.value })}
+          />
+        </div>
+        <div>
+          <label className="label-field">Légende</label>
+          <input
+            className="input-field"
+            value={form.caption}
+            onChange={(e) => setForm({ ...form, caption: e.target.value })}
           />
         </div>
         <div>
@@ -137,23 +105,26 @@ export default function MediasPage() {
             ))}
           </select>
         </div>
-        <div className="md:col-span-2">
-          <label className="label-field">Texte</label>
-          <textarea
-            className="input-field min-h-[80px]"
-            value={form.caption}
-            onChange={(e) => setForm({ ...form, caption: e.target.value })}
-            placeholder="Quelques mots sur la photo ou la vidéo…"
-          />
+        <div>
+          <label className="label-field">Type</label>
+          <select
+            className="input-field"
+            value={form.media_type}
+            onChange={(e) =>
+              setForm({ ...form, media_type: e.target.value as MediaType })
+            }
+          >
+            <option value="photo">Photo</option>
+            <option value="video">Vidéo</option>
+          </select>
         </div>
         <div className="md:col-span-2">
-          <Button onClick={createAsset} disabled={saving}>
-            {saving ? "Ajout…" : "Ajouter le média"}
+          <Button onClick={createAsset} disabled={!form.file_url}>
+            Ajouter le média
           </Button>
         </div>
       </div>
 
-      {error ? <p className="text-sm text-red-300">{error}</p> : null}
       {message ? <p className="text-sm text-success">{message}</p> : null}
 
       {assets.length ? (
@@ -169,23 +140,14 @@ export default function MediasPage() {
                     className="object-cover"
                     unoptimized
                   />
-                ) : asset.media_type === "video" && asset.file_url ? (
-                  <video
-                    src={asset.file_url}
-                    controls
-                    className="h-full w-full object-cover"
-                  />
                 ) : (
                   <div className="flex h-full items-center justify-center text-sm text-muted">
-                    Vidéo
+                    Vidéo · {asset.file_url}
                   </div>
                 )}
               </div>
               <div className="space-y-2 p-4">
-                <p className="font-medium">{asset.title || asset.caption}</p>
-                {asset.caption ? (
-                  <p className="text-sm text-muted">{asset.caption}</p>
-                ) : null}
+                <p className="font-medium">{asset.caption || asset.alt_text}</p>
                 <p className="text-xs text-muted">
                   {asset.is_published ? "Publié" : "Brouillon"} ·{" "}
                   {asset.site_slug}
@@ -205,7 +167,7 @@ export default function MediasPage() {
       ) : (
         <EmptyState
           title="Aucun média"
-          description="Ajoute une photo ou une vidéo de soirée avec un titre pour le SEO."
+          description="Ajoute une photo de soirée avec un alt_text propre pour le SEO."
         />
       )}
     </div>

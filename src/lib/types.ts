@@ -115,7 +115,6 @@ export interface MediaAsset {
   media_type: MediaType;
   file_url: string;
   thumbnail_url: string;
-  title: string;
   alt_text: string;
   caption: string;
   seo_json_ld: Record<string, unknown>;

@@ -31,13 +31,6 @@
 - **Solution** : `npm install next-auth@beta`
 - **Prévention** : vérifier le tag npm avant d’épingler une major
 
-### [2026-08-01] `/api/llms-txt` figé au build (route statique)
-- **Contexte** : ajout de la route `GET /api/llms-txt` (générée depuis `media_assets` en mémoire)
-- **Symptôme** : `next build` marquait la route en `○ (Static)` — elle aurait servi un contenu figé au build au lieu de refléter les publications faites en runtime
-- **Cause** : la route n'utilise aucune API dynamique (pas de cookies/headers), donc Next l'optimise en statique par défaut
-- **Solution** : ajout de `export const dynamic = "force-dynamic"` dans la route
-- **Prévention** : pour toute route `GET` publique qui lit le store mutable sans passer par `auth()`, forcer `dynamic = "force-dynamic"` explicitement
-
 ---
 
 *(Journal actif.)*

@@ -363,7 +363,6 @@ export function createSeedStore(): DataStore {
       media_type: "photo",
       file_url: "https://images.unsplash.com/photo-1516280440614-6697288d5d38?w=800",
       thumbnail_url: "https://images.unsplash.com/photo-1516280440614-6697288d5d38?w=400",
-      title: "Plateau Biiip",
       alt_text: "Public du Biiip Comedy Club pendant un plateau",
       caption: "Ambiance cave — Plateau Biiip",
       seo_json_ld: {

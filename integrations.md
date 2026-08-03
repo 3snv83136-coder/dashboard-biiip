@@ -66,7 +66,6 @@
   - **(b) API/webhook** : le dashboard appelle une route sécurisée du site pour créer le contenu + déclencher un `revalidatePath`.
 - Dans les deux cas, le JSON-LD (`seo_json_ld`) et l'`alt_text` sont produits côté dashboard et injectés dans les pages du site.
 - **Env (option b)** : `SITE_PUBLISH_WEBHOOK_URL`, `SITE_REVALIDATE_TOKEN`
-- **`llms.txt`** : `GET /api/llms-txt` (public, sans auth) régénère à la volée un fichier `llms.txt` (Markdown) listant les médias publiés, à partir de `media_assets` (titre, texte, lien). Le site public peut soit le récupérer à la build/à la demande (option a), soit le recevoir directement dans le payload du webhook de publication (`llms_txt`, option b) pour l'écrire à sa racine.
 
 ---
 

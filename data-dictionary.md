@@ -148,19 +148,16 @@ Photos/vidéos d'une soirée, destinées à être publiées sur `biiipcomedyclub
 | `_id` | objectId | Identifiant |
 | `show_id` | objectId \| null | Réf. `shows._id` |
 | `media_type` | enum | `photo` \| `video` |
-| `file_url` | string | Fichier source (upload, en `data:` URL tant qu'il n'y a pas de stockage objet) |
+| `file_url` | string | Fichier source |
 | `thumbnail_url` | string | Vignette |
-| `title` | string | Titre du média |
 | `alt_text` | string | Texte alternatif (SEO / accessibilité) |
-| `caption` | string | Légende / texte descriptif |
+| `caption` | string | Légende |
 | `seo_json_ld` | object | Bloc Schema.org (JSON-LD) prêt à injecter |
 | `site_slug` | string | Page/URL du site où l'asset apparaît |
 | `is_published` | bool | Publié sur le site |
 | `published_at` | date | Date de publication |
 | `created_at` | date | Création |
 | `updated_at` | date | Mise à jour |
-
-> Publication site : chaque média publié alimente aussi un `llms.txt` généré à la volée (voir `GET /api/llms-txt`) et le payload webhook `SITE_PUBLISH_WEBHOOK_URL` (voir `integrations.md`).
 
 ---
 
