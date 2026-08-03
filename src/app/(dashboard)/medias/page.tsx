@@ -5,8 +5,10 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import {
   BIIIP_REVIEW_TITLE_EN,
   BIIIP_REVIEW_TITLE_FR,
+  VENUE_ABOUT,
 } from "@/lib/constants";
 import { fileToJpegFile } from "@/lib/image-resize";
+import { localSiteStoryDraft } from "@/lib/site-story-draft";
 import type { MediaAsset, Show, SiteStory, SiteStoryFaq } from "@/lib/types";
 import { ExternalLink, Sparkles, Upload } from "lucide-react";
 import Image from "next/image";
@@ -42,8 +44,7 @@ const emptyForm = (): StoryForm => ({
   show_id: "",
   faqs: [],
   author_name: "Rédaction Biiip Comedy Club",
-  about_org:
-    "Le Biiip Comedy Club est une cave voûtée de 19 places à Toulon.",
+  about_org: VENUE_ABOUT,
   generated_by: "manual",
 });
 
@@ -64,44 +65,14 @@ function isTimeoutError(message: string, status?: number): boolean {
 
 /** Brouillon client si l’API Vercel est tuée avant la réponse. */
 function clientLocalDraft(notes: string, show?: Show | null): StoryForm {
-  const theme =
-    notes.trim() || show?.title || "une soirée stand-up pleine d'énergie";
-  const h1 = show
-    ? `${show.title} — vu du Biiip Comedy Club`
-    : `Au Biiip : ${theme.slice(0, 48)}`;
+  const draft = localSiteStoryDraft(notes, show);
   return {
     ...emptyForm(),
-    h1,
-    slug: "",
-    meta_description:
-      "L'avis du Biiip Comedy Club à Toulon — cave voûtée, 19 places, stand-up live.",
-    body_text: [
-      `Au Biiip Comedy Club à Toulon, la cave voûtée n'accueille que 19 places — assez près pour sentir chaque punchline arriver.`,
-      notes.trim()
-        ? `À partir des notes de l'équipe — « ${notes.trim()} » — l'ambiance est celle d'une salle collée à la scène, des rires qui rebondissent sous la voûte.`
-        : `Une soirée stand-up intimiste, des sets serrés, des réactions vraies.`,
-      `Des sets serrés, des réactions vraies, et une intimité que les grandes salles ne peuvent pas inventer.`,
-    ].join("\n\n"),
+    ...draft,
     notes,
     show_id: show?._id || "",
-    faqs: [
-      {
-        question: "Où se trouve le Biiip Comedy Club ?",
-        answer:
-          "À Toulon — une cave voûtée intimiste avec une scène de 19 places.",
-      },
-      {
-        question: "C'est quoi L'avis du Biiip ?",
-        answer:
-          "Notre regard éditorial sur une soirée au club : ambiance, artistes, et ce qui a fait rire la salle.",
-      },
-      {
-        question: "Comment réserver des places ?",
-        answer:
-          "La billetterie est sur Billetweb via biiipcomedyclub.fr.",
-      },
-    ],
-    generated_by: "manual",
+    photo_1: "",
+    video_url: "",
   };
 }
 

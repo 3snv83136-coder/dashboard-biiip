@@ -1,5 +1,21 @@
-import type { Artist, DocType, Show, SiteStoryFaq } from "./types";
-import { DOC_TYPE_LABELS, SHOW_TYPE_LABELS } from "./constants";
+import type { Artist, DocType, Show } from "./types";
+import {
+  DOC_TYPE_LABELS,
+  SHOW_TYPE_LABELS,
+  VENUE_ABOUT,
+  VENUE_CAPACITY,
+  VENUE_FULL_ADDRESS,
+  VENUE_NAME,
+  VENUE_NEAR,
+} from "./constants";
+import {
+  ensureFactualFaqs,
+  localSiteStoryDraft,
+  type SiteStoryAiDraft,
+} from "./site-story-draft";
+
+export type { SiteStoryAiDraft };
+export { localSiteStoryDraft };
 
 /** Un seul modèle rapide — enchaîner plusieurs modèles = timeout Vercel Hobby (~10s). */
 const CLAUDE_FAST = "claude-haiku-4-5-20251001";
@@ -83,19 +99,6 @@ Réponds uniquement avec le contenu du document en markdown.`;
   };
 }
 
-export type SiteStoryAiDraft = {
-  title_en: string;
-  title_fr: string;
-  h1: string;
-  slug: string;
-  meta_description: string;
-  body_text: string;
-  faqs: SiteStoryFaq[];
-  author_name: string;
-  about_org: string;
-  generated_by: "claude" | "manual";
-};
-
 export async function generateSiteStoryContent(params: {
   notes: string;
   show?: Show | null;
@@ -108,30 +111,57 @@ export async function generateSiteStoryContent(params: {
     : "Pas de soirée liée.";
   const staffText = notes.trim() || "soirée stand-up live au Biiip";
 
-  const prompt = `Rédacteur SEO Biiip Comedy Club (cave 19 places, Toulon).
-AMPLIFIE en français le texte staff (ne le recopie pas).
-TEXTE: """${staffText}"""
+  const prompt = `Tu es le rédacteur SEO du ${VENUE_NAME} (${VENUE_FULL_ADDRESS}, cave de ${VENUE_CAPACITY} places, ${VENUE_NEAR}).
+
+MISSION : transformer les NOTES STAFF en un vrai article éditorial enrichi (L'avis du Biiip).
+INTERDIT : recopier les notes telles quelles, coller un seul paragraphe court, inventer une autre adresse.
+
+NOTES STAFF:
+"""${staffText}"""
 ${showLine}
-Médias photo=${has_photo ? "oui" : "non"} vidéo=${has_video ? "oui" : "non"}
-JSON uniquement:
-{"title_en":"The Biiip Review","title_fr":"L'avis du Biiip","h1":"...","slug":"...","meta_description":"...","body_text":"2-3 paragraphes","faqs":[{"question":"...","answer":"..."},{"question":"...","answer":"..."},{"question":"...","answer":"..."}],"author_name":"Rédaction Biiip Comedy Club","about_org":"Le Biiip Comedy Club est une cave voûtée de 19 places à Toulon."}`;
+Médias : photo=${has_photo ? "oui" : "non"} · vidéo=${has_video ? "oui" : "non"}
+
+RÈGLES body_text :
+- 4 à 5 paragraphes courts en français, séparés par \\n\\n
+- Amplifie : ambiance, punchlines, public, intimité de la cave, ce qui ressort des notes
+- Ton chaleureux, direct, pro — pas de jargon SEO creux
+
+RÈGLES faqs (exactement 4) :
+- QUESTIONS NOUVELLES à chaque fois, en lien direct avec ces notes / cette soirée
+- Une FAQ « Où se trouve le Biiip Comedy Club ? » avec cette adresse EXACTE : ${VENUE_FULL_ADDRESS}
+- Les 3 autres FAQ doivent parler du contenu de l'avis (jamais les mêmes génériques)
+
+about_org = "${VENUE_ABOUT}"
+
+JSON UNIQUEMENT (pas de markdown) :
+{"title_en":"The Biiip Review","title_fr":"L'avis du Biiip","h1":"...","slug":"kebab-case","meta_description":"...max 155 car","body_text":"para1\\n\\npara2\\n\\npara3\\n\\npara4","faqs":[{"question":"...","answer":"..."},{"question":"...","answer":"..."},{"question":"...","answer":"..."},{"question":"...","answer":"..."}],"author_name":"Rédaction Biiip Comedy Club","about_org":"${VENUE_ABOUT}"}`;
 
   const text = await callClaude({
     prompt,
-    max_tokens: 700,
-    timeout_ms: 4_500,
+    max_tokens: 1200,
+    timeout_ms: 6_500,
     fast: true,
   });
   if (text) {
     const parsed = parseStoryJson(text);
     if (parsed) {
-      if (
-        notes.trim() &&
-        normalizeCmp(parsed.body_text) === normalizeCmp(notes)
-      ) {
+      const bodyTooThin =
+        parsed.body_text.split(/\n\n+/).filter(Boolean).length < 3 ||
+        parsed.body_text.trim().length < 280;
+      const copiedNotes =
+        Boolean(notes.trim()) &&
+        normalizeCmp(parsed.body_text) === normalizeCmp(notes);
+
+      if (copiedNotes || bodyTooThin) {
         return localSiteStoryDraft(notes, show);
       }
-      return { ...parsed, generated_by: "claude" };
+
+      return {
+        ...parsed,
+        faqs: ensureFactualFaqs(parsed.faqs),
+        about_org: VENUE_ABOUT,
+        generated_by: "claude",
+      };
     }
   }
 
@@ -153,16 +183,26 @@ function parseStoryJson(
   if (!match) return null;
   try {
     const data = JSON.parse(match[0]) as Partial<SiteStoryAiDraft>;
-    const faqs = Array.isArray(data.faqs)
-      ? data.faqs
-          .map((f) => ({
-            question: String(f?.question || "").trim(),
-            answer: String(f?.answer || "").trim(),
-          }))
-          .filter((f) => f.question && f.answer)
-          .slice(0, 6)
-      : [];
+    const faqs = ensureFactualFaqs(
+      Array.isArray(data.faqs)
+        ? data.faqs
+            .map((f) => ({
+              question: String(f?.question || "").trim(),
+              answer: String(f?.answer || "").trim(),
+            }))
+            .filter((f) => f.question && f.answer)
+            .slice(0, 6)
+        : []
+    );
     if (!data.h1 || !data.body_text || faqs.length < 1) return null;
+
+    const body_text = String(data.body_text)
+      .replace(/\r\n/g, "\n")
+      .split(/\n+/)
+      .map((p) => p.trim())
+      .filter(Boolean)
+      .join("\n\n");
+
     return {
       title_en: String(data.title_en || "The Biiip Review").trim(),
       title_fr: String(data.title_fr || "L'avis du Biiip").trim(),
@@ -171,68 +211,16 @@ function parseStoryJson(
       meta_description: String(data.meta_description || "")
         .trim()
         .slice(0, 160),
-      body_text: String(data.body_text).trim(),
+      body_text,
       faqs,
       author_name: String(
         data.author_name || "Rédaction Biiip Comedy Club"
       ).trim(),
-      about_org: String(
-        data.about_org ||
-          "Le Biiip Comedy Club est une cave voûtée de 19 places à Toulon."
-      ).trim(),
+      about_org: VENUE_ABOUT,
     };
   } catch {
     return null;
   }
-}
-
-export function localSiteStoryDraft(
-  notes: string,
-  show?: Show | null
-): SiteStoryAiDraft {
-  const theme =
-    notes.trim() || show?.title || "une soirée stand-up pleine d'énergie";
-  const h1 = show
-    ? `${show.title} — vu du Biiip Comedy Club`
-    : `Au Biiip : ${theme.slice(0, 48)}`;
-  const body = [
-    `Au Biiip Comedy Club à Toulon, la cave voûtée n'accueille que 19 places — assez près pour sentir chaque punchline arriver.`,
-    show
-      ? `Cet avis revient sur ${show.title} (${show.show_date}). ${theme}`
-      : `À partir de ce que l'équipe a noté — « ${theme} » — voici l'ambiance ressentie depuis la salle : des rires qui rebondissent sous la voûte, un public collé à la scène, zéro distance.`,
-    `Des sets serrés, des réactions vraies, et une intimité que les grandes salles ne peuvent pas inventer. C'est exactement pour ça que le Biiip existe.`,
-  ].join("\n\n");
-
-  return {
-    title_en: "The Biiip Review",
-    title_fr: "L'avis du Biiip",
-    h1,
-    slug: "",
-    meta_description:
-      "L'avis du Biiip Comedy Club à Toulon — cave voûtée, 19 places, stand-up live.",
-    body_text: body,
-    faqs: [
-      {
-        question: "Où se trouve le Biiip Comedy Club ?",
-        answer:
-          "À Toulon — une cave voûtée intimiste avec une scène de 19 places.",
-      },
-      {
-        question: "C'est quoi L'avis du Biiip ?",
-        answer:
-          "Notre regard éditorial sur une soirée au club : ambiance, artistes, et ce qui a fait rire la salle.",
-      },
-      {
-        question: "Comment réserver des places ?",
-        answer:
-          "La billetterie est sur Billetweb via biiipcomedyclub.fr — le dashboard ne fait que renvoyer le lien.",
-      },
-    ],
-    author_name: "Rédaction Biiip Comedy Club",
-    about_org:
-      "Le Biiip Comedy Club est une cave voûtée de 19 places à Toulon.",
-    generated_by: "manual",
-  };
 }
 
 function localTemplate(doc_type: DocType, show: Show, artist: Artist): string {

@@ -3,6 +3,7 @@ import {
   BIIIP_REVIEW_TITLE_EN,
   BIIIP_REVIEW_TITLE_FR,
   PUBLIC_SITE_BASE,
+  VENUE_ABOUT,
 } from "@/lib/constants";
 import { createId, nowIso } from "@/lib/ids";
 import {
@@ -10,6 +11,10 @@ import {
   normalizeFaqs,
   withStoryDefaults,
 } from "@/lib/site-story";
+import {
+  buildContextualFaqs,
+  ensureFactualFaqs,
+} from "@/lib/site-story-draft";
 import { slugify } from "@/lib/slugify";
 import { loadStore, upsertSiteStory } from "@/lib/store";
 import type { SiteStory } from "@/lib/types";
@@ -47,34 +52,15 @@ export async function POST(req: Request) {
   const title_en = String(body.title_en || BIIIP_REVIEW_TITLE_EN).trim();
   const title_fr = String(body.title_fr || BIIIP_REVIEW_TITLE_FR).trim();
   const video_url = String(body.video_url || "").trim();
-  const faqsRaw = normalizeFaqs(body.faqs);
+  const faqsRaw = ensureFactualFaqs(normalizeFaqs(body.faqs));
   const faqs =
     faqsRaw.length > 0
       ? faqsRaw
-      : [
-          {
-            question: "Où se trouve le Biiip Comedy Club ?",
-            answer:
-              "À Toulon — une cave voûtée intimiste avec une scène de 19 places.",
-          },
-          {
-            question: "C'est quoi L'avis du Biiip ?",
-            answer:
-              "Notre regard éditorial sur une soirée au club : ambiance, artistes, et ce qui a fait rire la salle.",
-          },
-          {
-            question: "Comment réserver des places ?",
-            answer:
-              "La billetterie est sur Billetweb via biiipcomedyclub.fr.",
-          },
-        ];
+      : buildContextualFaqs(body_text || h1, null);
   const author_name = String(
     body.author_name || "Rédaction Biiip Comedy Club"
   ).trim();
-  const about_org = String(
-    body.about_org ||
-      "Le Biiip Comedy Club est une cave voûtée de 19 places à Toulon."
-  ).trim();
+  const about_org = String(body.about_org || VENUE_ABOUT).trim() || VENUE_ABOUT;
   const meta_description = String(
     body.meta_description || body_text.slice(0, 155)
   )

@@ -23,7 +23,18 @@ export const BIIIP_REVIEW_TITLE_EN = "The Biiip Review";
 export const BIIIP_REVIEW_TITLE_FR = "L'avis du Biiip";
 export const PUBLIC_SITE_BASE = "https://biiipcomedyclub.fr";
 
-export const DEFAULT_CAPACITY = 19;
+/** Lieu réel du club (FAQ / E-E-A-T — ne pas inventer d’autre adresse). */
+export const VENUE_NAME = "Biiip Comedy Club";
+export const VENUE_ADDRESS_LINE = "1 rue de l'Humilité";
+export const VENUE_POSTAL_CODE = "83000";
+export const VENUE_CITY = "Toulon";
+export const VENUE_FULL_ADDRESS = `${VENUE_ADDRESS_LINE}, ${VENUE_POSTAL_CODE} ${VENUE_CITY}`;
+export const VENUE_NEAR = "tout près de l'Opéra de Toulon";
+export const VENUE_CAPACITY = 19;
+export const VENUE_ABOUT =
+  `Le ${VENUE_NAME} est une cave voûtée de ${VENUE_CAPACITY} places au ${VENUE_FULL_ADDRESS} (${VENUE_NEAR}).`;
+
+export const DEFAULT_CAPACITY = VENUE_CAPACITY;
 
 export const BOOKING_STATUS_LABELS: Record<BookingStatus, string> = {
   pressenti: "Pressenti",

@@ -3,58 +3,21 @@ import {
   BIIIP_REVIEW_TITLE_EN,
   BIIIP_REVIEW_TITLE_FR,
   PUBLIC_SITE_BASE,
+  VENUE_ABOUT,
 } from "@/lib/constants";
 import { createId, nowIso } from "@/lib/ids";
 import { buildSiteStoryJsonLd, normalizeFaqs } from "@/lib/site-story";
+import {
+  ensureFactualFaqs,
+  localSiteStoryDraft,
+} from "@/lib/site-story-draft";
 import { slugify } from "@/lib/slugify";
 import { loadStore, upsertSiteStory } from "@/lib/store";
-import type { SiteStory, SiteStoryFaq } from "@/lib/types";
+import type { SiteStory } from "@/lib/types";
 import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
 export const maxDuration = 10;
-
-const DEFAULT_FAQS: SiteStoryFaq[] = [
-  {
-    question: "Où se trouve le Biiip Comedy Club ?",
-    answer:
-      "À Toulon — une cave voûtée intimiste avec une scène de 19 places.",
-  },
-  {
-    question: "C'est quoi L'avis du Biiip ?",
-    answer:
-      "Notre regard éditorial sur une soirée au club : ambiance, artistes, et ce qui a fait rire la salle.",
-  },
-  {
-    question: "Comment réserver des places ?",
-    answer: "La billetterie est sur Billetweb via biiipcomedyclub.fr.",
-  },
-];
-
-/** Brouillon local ultra-rapide (pas d’appel Claude ici — évite le timeout Vercel). */
-function localDraft(notes: string): {
-  h1: string;
-  body_text: string;
-  meta_description: string;
-  slug: string;
-  faqs: SiteStoryFaq[];
-} {
-  const theme = notes.trim() || "une soirée stand-up pleine d'énergie";
-  const h1 = `Au Biiip : ${theme.slice(0, 48)}`;
-  const body_text = [
-    `Au Biiip Comedy Club à Toulon, la cave voûtée n'accueille que 19 places — assez près pour sentir chaque punchline arriver.`,
-    `À partir des notes de l'équipe — « ${theme} » — l'ambiance est celle d'une salle collée à la scène, des rires qui rebondissent sous la voûte, zéro distance.`,
-    `Des sets serrés, des réactions vraies, et une intimité que les grandes salles ne peuvent pas inventer. C'est exactement pour ça que le Biiip existe.`,
-  ].join("\n\n");
-  return {
-    h1,
-    body_text,
-    meta_description:
-      "L'avis du Biiip Comedy Club à Toulon — cave voûtée, 19 places, stand-up live.",
-    slug: slugify(h1),
-    faqs: DEFAULT_FAQS,
-  };
-}
 
 /**
  * Crée l’aperçu SANS appeler Claude (rapide, stable sur Vercel Hobby).
@@ -88,16 +51,19 @@ export async function POST(req: Request) {
     );
   }
 
-  const fallback = localDraft(notes);
+  const fallback = localSiteStoryDraft(notes);
   const h1 = String(body.h1 || "").trim() || fallback.h1;
   const body_text = String(body.body_text || "").trim() || fallback.body_text;
-  let faqs = normalizeFaqs(body.faqs);
+  let faqs = ensureFactualFaqs(normalizeFaqs(body.faqs));
   if (!faqs.length) faqs = fallback.faqs;
   const meta_description =
     String(body.meta_description || "").trim() || fallback.meta_description;
-  const slugHint = String(body.slug || "").trim() || fallback.slug;
+  const slugHint = String(body.slug || "").trim() || fallback.slug || h1;
   const generated_by =
     body.generated_by === "claude" ? "claude" : ("manual" as const);
+  const author_name =
+    String(body.author_name || "").trim() || fallback.author_name;
+  const about_org = VENUE_ABOUT;
 
   const ts = nowIso();
   let storeSlugs = new Set<string>();
@@ -126,9 +92,8 @@ export async function POST(req: Request) {
     photo_urls,
     video_url,
     faqs,
-    author_name: "Rédaction Biiip Comedy Club",
-    about_org:
-      "Le Biiip Comedy Club est une cave voûtée de 19 places à Toulon.",
+    author_name,
+    about_org,
     seo_json_ld: {},
     show_id,
     is_published: false,

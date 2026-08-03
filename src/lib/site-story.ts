@@ -1,5 +1,6 @@
-import { PUBLIC_SITE_BASE } from "@/lib/constants";
+import { PUBLIC_SITE_BASE, VENUE_ABOUT } from "@/lib/constants";
 import type { SiteStory, SiteStoryFaq } from "@/lib/types";
+import { ensureFactualFaqs } from "@/lib/site-story-draft";
 
 export function normalizeFaqs(raw: unknown): SiteStoryFaq[] {
   if (!Array.isArray(raw)) return [];
@@ -82,11 +83,9 @@ export function buildSiteStoryJsonLd(story: {
 /** Normalise les champs SEO manquants pour les anciennes stories. */
 export function withStoryDefaults(story: SiteStory): SiteStory {
   const h1 = story.h1 || story.title_en || "The Biiip Review";
-  const faqs = story.faqs ?? [];
+  const faqs = ensureFactualFaqs(story.faqs ?? []);
   const author_name = story.author_name || "Rédaction Biiip Comedy Club";
-  const about_org =
-    story.about_org ||
-    "Le Biiip Comedy Club est une cave voûtée de 19 places à Toulon.";
+  const about_org = story.about_org || VENUE_ABOUT;
   const meta_description =
     story.meta_description || story.body_text.slice(0, 155);
   const seo_json_ld =
