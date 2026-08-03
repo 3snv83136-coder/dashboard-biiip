@@ -59,7 +59,7 @@ export function BiiipReviewSpectacle({
             backgroundPosition: "center",
           }}
         />
-        <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#020b1c] to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-black to-transparent" />
 
         <div className="relative mx-auto flex min-h-[78vh] max-w-4xl flex-col justify-end px-5 pb-16 pt-28 sm:px-8 sm:pb-20">
           <p
@@ -91,7 +91,34 @@ export function BiiipReviewSpectacle({
         </div>
       </header>
 
-      <article className="relative z-10 mx-auto max-w-3xl px-5 pb-24 pt-6 sm:px-8 sm:pb-32">
+      {/* Fond logo sur tout le reste de la page (sous le hero photo) */}
+      <div className="relative z-10 isolate">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 -z-10 overflow-hidden bg-black"
+        >
+          <div
+            className="absolute inset-0 opacity-[0.55]"
+            style={{
+              backgroundImage: "url(/biiip-logo-neon.png)",
+              backgroundRepeat: "no-repeat",
+              backgroundPosition: "center 12%",
+              backgroundSize: "min(92vw, 720px)",
+            }}
+          />
+          <div
+            className="absolute inset-0 opacity-[0.22]"
+            style={{
+              backgroundImage: "url(/biiip-logo-neon.png)",
+              backgroundRepeat: "repeat-y",
+              backgroundPosition: "center top",
+              backgroundSize: "min(70vw, 480px)",
+            }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#020b1c]/75 via-transparent to-[#020b1c]/85" />
+        </div>
+
+      <article className="relative mx-auto max-w-3xl px-5 pb-24 pt-6 sm:px-8 sm:pb-32">
         <div className="flex flex-col gap-10 sm:gap-14">
           {paragraphs.map((paragraph, i) => (
             <Reveal
@@ -99,7 +126,7 @@ export function BiiipReviewSpectacle({
               from={i % 2 === 0 ? "left" : "right"}
               delayMs={40}
             >
-              <div className="relative rounded-[1.75rem] border border-white/[0.09] bg-gradient-to-br from-white/[0.07] to-white/[0.02] px-6 py-9 shadow-[0_20px_60px_rgba(0,0,0,0.35)] backdrop-blur-sm sm:px-11 sm:py-12">
+              <div className="relative rounded-[1.75rem] border border-white/[0.09] bg-[#061833]/88 px-6 py-9 shadow-[0_20px_60px_rgba(0,0,0,0.45)] backdrop-blur-md sm:px-11 sm:py-12">
                 <span
                   className="mb-5 block text-[0.7rem] tracking-[0.35em] text-[#e94560]"
                   style={{ fontFamily: "var(--font-bebas), sans-serif" }}
@@ -243,6 +270,7 @@ export function BiiipReviewSpectacle({
           </footer>
         </Reveal>
       </article>
+      </div>
     </main>
   );
 }
