@@ -1,6 +1,6 @@
 import { requireSession } from "@/lib/api-auth";
 import { nowIso } from "@/lib/ids";
-import { getStore } from "@/lib/store";
+import { loadStore, saveStore } from "@/lib/store";
 import type { BookingStatus, ShowType } from "@/lib/types";
 import { NextResponse } from "next/server";
 
@@ -11,7 +11,7 @@ export async function PATCH(
   const { error } = await requireSession(["admin", "staff"]);
   if (error) return error;
 
-  const store = getStore();
+  const store = await loadStore();
   const show = store.shows.find((s) => s._id === params.id);
   if (!show) {
     return NextResponse.json({ error: "Show introuvable" }, { status: 404 });
@@ -34,6 +34,7 @@ export async function PATCH(
   }
   show.updated_at = nowIso();
 
+  await saveStore(store);
   return NextResponse.json({ show });
 }
 
@@ -44,7 +45,7 @@ export async function DELETE(
   const { error } = await requireSession(["admin"]);
   if (error) return error;
 
-  const store = getStore();
+  const store = await loadStore();
   const idx = store.shows.findIndex((s) => s._id === params.id);
   if (idx === -1) {
     return NextResponse.json({ error: "Show introuvable" }, { status: 404 });
@@ -54,5 +55,6 @@ export async function DELETE(
   store.show_bookings = store.show_bookings.filter((b) => b.show_id !== params.id);
   store.documents = store.documents.filter((d) => d.show_id !== params.id);
 
+  await saveStore(store);
   return NextResponse.json({ ok: true });
 }

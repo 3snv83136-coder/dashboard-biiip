@@ -8,7 +8,7 @@
 
 | Service | Usage | Statut | Priorité |
 |---|---|---|---|
-| MongoDB (Atlas) | Base de données | À créer | v1 |
+| MongoDB (Atlas) | Base de données | Branché | v1 |
 | Auth.js (NextAuth) | Authentification + rôles | À intégrer | v1 |
 | Vercel | Hébergement + env vars | Compte OK | v1 |
 | Brevo | Email **et** SMS | Compte OK | v1 |
@@ -23,8 +23,10 @@
 
 ## 1. MongoDB
 - **Rôle** : base de données de toute l'app.
-- **À décider** : réutiliser un cluster existant du portfolio ou en créer un dédié. Recommandé : **cluster/DB dédié** `dashboard_biiip`.
+- **Cluster** : Atlas `biiip` — DB `dashboard_biiip`.
 - **Env** : `MONGODB_URI`, `MONGODB_DB=dashboard_biiip`
+- **Network Access** Atlas : autoriser `0.0.0.0/0` (requis pour Vercel).
+- Au premier démarrage (collections vides), seed démo automatique.
 - Voir `data-dictionary.md` pour les collections.
 
 ## 2. Auth.js (NextAuth v5)
@@ -86,7 +88,7 @@ AUTH_SECRET=
 AUTH_URL=
 BREVO_API_KEY=
 BREVO_SENDER_EMAIL=
-BREVO_SMS_SENDER=
+BREVO_SMS_SENDER=BiiipComedy
 ANTHROPIC_API_KEY=
 # Publication site (option b)
 SITE_PUBLISH_WEBHOOK_URL=

@@ -1,6 +1,6 @@
 import { requireSession } from "@/lib/api-auth";
 import { nowIso } from "@/lib/ids";
-import { getStore } from "@/lib/store";
+import { loadStore, saveStore } from "@/lib/store";
 import type { ArtistLevel } from "@/lib/types";
 import { NextResponse } from "next/server";
 
@@ -11,7 +11,7 @@ export async function GET(
   const { error } = await requireSession(["admin", "staff"]);
   if (error) return error;
 
-  const store = getStore();
+  const store = await loadStore();
   const artist = store.artists.find((a) => a._id === params.id);
   if (!artist) {
     return NextResponse.json({ error: "Artiste introuvable" }, { status: 404 });
@@ -33,7 +33,7 @@ export async function PATCH(
   const { error } = await requireSession(["admin", "staff"]);
   if (error) return error;
 
-  const store = getStore();
+  const store = await loadStore();
   const artist = store.artists.find((a) => a._id === params.id);
   if (!artist) {
     return NextResponse.json({ error: "Artiste introuvable" }, { status: 404 });
@@ -50,6 +50,9 @@ export async function PATCH(
     "instagram_handle",
     "tiktok_handle",
     "internal_notes",
+    "technical_needs",
+    "dietary_notes",
+    "city",
   ] as const;
 
   for (const field of fields) {
@@ -65,5 +68,6 @@ export async function PATCH(
   }
   artist.updated_at = nowIso();
 
+  await saveStore(store);
   return NextResponse.json({ artist });
 }

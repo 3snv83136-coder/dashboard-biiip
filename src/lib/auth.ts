@@ -1,7 +1,7 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { authConfig } from "./auth.config";
-import { getStore } from "./store";
+import { withStore } from "./store";
 import type { Role } from "./types";
 
 /** Code d'accès unique au dashboard (PIN). */
@@ -21,20 +21,21 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           .trim();
         if (password !== APP_ACCESS_CODE) return null;
 
-        const store = getStore();
-        const user =
-          store.users.find((u) => u.role === "admin" && u.is_active) ??
-          store.users.find((u) => u.is_active);
-        if (!user) return null;
+        return withStore(async (store) => {
+          const user =
+            store.users.find((u) => u.role === "admin" && u.is_active) ??
+            store.users.find((u) => u.is_active);
+          if (!user) return null;
 
-        user.last_login_at = new Date().toISOString();
-        return {
-          id: user._id,
-          email: user.email,
-          name: user.full_name,
-          role: user.role as Role,
-          artist_id: user.artist_id,
-        };
+          user.last_login_at = new Date().toISOString();
+          return {
+            id: user._id,
+            email: user.email,
+            name: user.full_name,
+            role: user.role as Role,
+            artist_id: user.artist_id,
+          };
+        });
       },
     }),
   ],

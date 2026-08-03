@@ -1,6 +1,6 @@
 import { requireSession } from "@/lib/api-auth";
 import { createId, nowIso } from "@/lib/ids";
-import { getStore } from "@/lib/store";
+import { loadStore, saveStore } from "@/lib/store";
 import type { RadioGuest, RadioGuestRole } from "@/lib/types";
 import { NextResponse } from "next/server";
 
@@ -9,7 +9,7 @@ export async function POST(req: Request) {
   if (error) return error;
 
   const body = await req.json();
-  const store = getStore();
+  const store = await loadStore();
   const episode = store.radio_episodes.find(
     (e) => e._id === body.radio_episode_id
   );
@@ -53,5 +53,6 @@ export async function POST(req: Request) {
   }
 
   store.radio_guests.push(guest);
+  await saveStore(store);
   return NextResponse.json({ radio_guest: guest }, { status: 201 });
 }

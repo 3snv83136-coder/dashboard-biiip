@@ -1,6 +1,6 @@
 import { requireSession } from "@/lib/api-auth";
 import { nowIso } from "@/lib/ids";
-import { getStore } from "@/lib/store";
+import { loadStore, saveStore } from "@/lib/store";
 import type { RadioGuestRole } from "@/lib/types";
 import { NextResponse } from "next/server";
 
@@ -11,7 +11,7 @@ export async function PATCH(
   const { error } = await requireSession(["admin", "staff"]);
   if (error) return error;
 
-  const store = getStore();
+  const store = await loadStore();
   const guest = store.radio_guests.find((g) => g._id === params.id);
   if (!guest) {
     return NextResponse.json({ error: "Invité introuvable" }, { status: 404 });
@@ -37,6 +37,7 @@ export async function PATCH(
   }
   guest.updated_at = nowIso();
 
+  await saveStore(store);
   return NextResponse.json({ radio_guest: guest });
 }
 
@@ -47,11 +48,12 @@ export async function DELETE(
   const { error } = await requireSession(["admin", "staff"]);
   if (error) return error;
 
-  const store = getStore();
+  const store = await loadStore();
   const idx = store.radio_guests.findIndex((g) => g._id === params.id);
   if (idx === -1) {
     return NextResponse.json({ error: "Invité introuvable" }, { status: 404 });
   }
   store.radio_guests.splice(idx, 1);
+  await saveStore(store);
   return NextResponse.json({ ok: true });
 }

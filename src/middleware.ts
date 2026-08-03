@@ -12,6 +12,15 @@ export default auth((req) => {
     return NextResponse.next();
   }
 
+  // Pages publiques
+  if (
+    path.startsWith("/the-biiip-review/") ||
+    path === "/ma-fiche" ||
+    path.startsWith("/ma-fiche/")
+  ) {
+    return NextResponse.next();
+  }
+
   if (!session && path !== "/login") {
     const url = new URL("/login", req.nextUrl.origin);
     url.searchParams.set("callbackUrl", path);

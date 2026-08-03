@@ -9,6 +9,7 @@ import {
   FileText,
   Home,
   ImageIcon,
+  KeyRound,
   LogOut,
   Radio,
   Settings,
@@ -30,6 +31,7 @@ const ICONS = {
   settings: Settings,
   home: Home,
   radio: Radio,
+  key: KeyRound,
 } as const;
 
 export function Sidebar({

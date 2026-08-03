@@ -2,7 +2,7 @@ import { requireSession } from "@/lib/api-auth";
 import { sendDocumentEmail } from "@/lib/brevo";
 import { generateDocumentContent } from "@/lib/claude";
 import { createId, nowIso } from "@/lib/ids";
-import { getStore } from "@/lib/store";
+import { loadStore, saveStore } from "@/lib/store";
 import type { DocStatus, DocType, DocumentRecord } from "@/lib/types";
 import { DOC_TYPE_LABELS } from "@/lib/constants";
 import { NextResponse } from "next/server";
@@ -11,7 +11,7 @@ export async function GET() {
   const gate = await requireSession(["admin", "staff", "artist"]);
   if (gate.error || !gate.session) return gate.error;
 
-  const store = getStore();
+  const store = await loadStore();
   let documents = store.documents;
 
   if (gate.session.user.role === "artist" && gate.session.user.artist_id) {
@@ -32,7 +32,7 @@ export async function POST(req: Request) {
   if (error) return error;
 
   const body = await req.json();
-  const store = getStore();
+  const store = await loadStore();
   const show = store.shows.find((s) => s._id === body.show_id);
   const artist = store.artists.find((a) => a._id === body.artist_id);
   if (!show || !artist) {
@@ -73,5 +73,6 @@ export async function POST(req: Request) {
     document.updated_at = document.sent_at;
   }
 
+  await saveStore(store);
   return NextResponse.json({ document }, { status: 201 });
 }

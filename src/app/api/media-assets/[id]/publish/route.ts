@@ -1,6 +1,6 @@
 import { requireSession } from "@/lib/api-auth";
 import { nowIso } from "@/lib/ids";
-import { getStore } from "@/lib/store";
+import { loadStore, saveStore } from "@/lib/store";
 import { NextResponse } from "next/server";
 
 export async function POST(
@@ -10,7 +10,7 @@ export async function POST(
   const { error } = await requireSession(["admin", "staff"]);
   if (error) return error;
 
-  const store = getStore();
+  const store = await loadStore();
   const asset = store.media_assets.find((m) => m._id === params.id);
   if (!asset) {
     return NextResponse.json({ error: "Média introuvable" }, { status: 404 });
@@ -36,6 +36,7 @@ export async function POST(
     }
   }
 
+  await saveStore(store);
   return NextResponse.json({
     media_asset: asset,
     message: "Publié sur le site ✅",

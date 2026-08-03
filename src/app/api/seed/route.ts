@@ -6,7 +6,7 @@ export async function POST() {
   const { error } = await requireSession(["admin"]);
   if (error) return error;
 
-  const store = resetStore();
+  const store = await resetStore();
   return NextResponse.json({
     ok: true,
     message: "Données démo réinitialisées",

@@ -43,6 +43,13 @@ Fiches artistes (répertoire + données de booking).
 | `instagram_handle` | string | @ Instagram |
 | `tiktok_handle` | string | @ TikTok |
 | `internal_notes` | string | Notes privées staff |
+| `access_code` | string | Code d'accès portail fiche artiste |
+| `access_code_updated_at` | date \| null | Dernière génération / reset du code |
+| `access_last_login_at` | date \| null | Dernière connexion au portail |
+| `access_profile_completed_at` | date \| null | 1re soumission complète du formulaire |
+| `technical_needs` | string | Besoins techniques (micro, lumières…) |
+| `dietary_notes` | string | Allergies / repas |
+| `city` | string | Ville de résidence / départ |
 | `created_at` | date | Création |
 | `updated_at` | date | Mise à jour |
 
@@ -156,6 +163,29 @@ Photos/vidéos d'une soirée, destinées à être publiées sur `biiipcomedyclub
 | `site_slug` | string | Page/URL du site où l'asset apparaît |
 | `is_published` | bool | Publié sur le site |
 | `published_at` | date | Date de publication |
+| `created_at` | date | Création |
+| `updated_at` | date | Mise à jour |
+
+---
+
+## Collection `site_stories`
+Pages éditoriales « The Biiip Review » (L'avis du Biiip) pour le site public.
+
+| Champ | Type | Description |
+|---|---|---|
+| `_id` | objectId | Identifiant |
+| `title_en` | string | Titre anglais affiché sur le site (ex. `The Biiip Review`) |
+| `title_fr` | string | Titre FR interne (ex. `L'avis du Biiip`) |
+| `slug` | string | Slug URL (`the-biiip-review-…`) |
+| `body_text` | string | Texte de la page |
+| `photo_urls` | array | 1 à 3 URLs photo |
+| `video_url` | string | URL vidéo (optionnel) |
+| `show_id` | objectId \| null | Réf. `shows._id` si lié à une soirée |
+| `is_published` | bool | Publié / prêt pour le site |
+| `published_at` | date | Date de publication |
+| `public_path` | string | Chemin public dashboard (`/the-biiip-review/{slug}`) |
+| `site_target_url` | string | URL cible sur `biiipcomedyclub.fr` |
+| `created_by` | objectId | Réf. `users._id` |
 | `created_at` | date | Création |
 | `updated_at` | date | Mise à jour |
 

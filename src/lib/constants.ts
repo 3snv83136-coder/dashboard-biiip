@@ -11,6 +11,18 @@ import type {
 export const GOOGLE_REVIEW_URL =
   "https://g.page/r/CQVV3gGN7QSuEAE/review";
 
+/** Texte SMS par défaut pour les demandes d'avis Google. */
+export const DEFAULT_REVIEW_SMS_BODY = `Un immense merci d'être passé au Biiip Comedy Club. On espère que tu as passé une bonne soirée.
+
+Tu as aimé l'expérience ? Donne-nous un coup de pouce en laissant ton avis juste ici : ${GOOGLE_REVIEW_URL}
+
+Ton soutien nous aide énormément à faire rayonner le club et à continuer de vous proposer les meilleurs spectacles. À très bientôt pour une nouvelle dose de rire !`;
+
+/** Pages éditoriales site public */
+export const BIIIP_REVIEW_TITLE_EN = "The Biiip Review";
+export const BIIIP_REVIEW_TITLE_FR = "L'avis du Biiip";
+export const PUBLIC_SITE_BASE = "https://biiipcomedyclub.fr";
+
 export const DEFAULT_CAPACITY = 19;
 
 export const BOOKING_STATUS_LABELS: Record<BookingStatus, string> = {
@@ -107,6 +119,14 @@ export const STAFF_NAV = [
       "https://images.unsplash.com/photo-1527224857830-43a7acc85260?w=800&q=80",
   },
   {
+    href: "/fiches-artistes",
+    label: "Fiches artistes",
+    icon: "key",
+    color: "#f5d76e",
+    image:
+      "https://images.unsplash.com/photo-1516280440614-6697288d5d38?w=800&q=80",
+  },
+  {
     href: "/documents",
     label: "Documents",
     icon: "file",
@@ -144,7 +164,7 @@ export const STAFF_NAV = [
     icon: "settings",
     color: "#9aa0b4",
     image:
-      "https://images.unsplash.com/photo-1516321318523-f629449dc093?w=800&q=80",
+      "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=800&q=80",
   },
 ] as const;
 

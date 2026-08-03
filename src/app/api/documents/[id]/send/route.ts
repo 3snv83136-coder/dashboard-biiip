@@ -1,7 +1,7 @@
 import { requireSession } from "@/lib/api-auth";
 import { sendDocumentEmail } from "@/lib/brevo";
 import { nowIso } from "@/lib/ids";
-import { getStore } from "@/lib/store";
+import { loadStore, saveStore } from "@/lib/store";
 import { DOC_TYPE_LABELS } from "@/lib/constants";
 import { NextResponse } from "next/server";
 
@@ -12,7 +12,7 @@ export async function POST(
   const { error } = await requireSession(["admin", "staff"]);
   if (error) return error;
 
-  const store = getStore();
+  const store = await loadStore();
   const document = store.documents.find((d) => d._id === params.id);
   if (!document) {
     return NextResponse.json({ error: "Document introuvable" }, { status: 404 });
@@ -37,5 +37,6 @@ export async function POST(
   document.sent_at = nowIso();
   document.updated_at = document.sent_at;
 
+  await saveStore(store);
   return NextResponse.json({ document, message: "C'est envoyé 🎤" });
 }

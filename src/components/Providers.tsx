@@ -1,7 +1,13 @@
 "use client";
 
+import { PwaRegister } from "@/components/PwaRegister";
 import { SessionProvider } from "next-auth/react";
 
 export function Providers({ children }: { children: React.ReactNode }) {
-  return <SessionProvider>{children}</SessionProvider>;
+  return (
+    <SessionProvider>
+      <PwaRegister />
+      {children}
+    </SessionProvider>
+  );
 }

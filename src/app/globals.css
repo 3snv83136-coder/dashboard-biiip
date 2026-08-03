@@ -58,7 +58,7 @@ video {
     @apply mb-1.5 block text-xs font-medium uppercase tracking-wide text-muted;
   }
   .page-stack {
-    @apply w-full max-w-7xl space-y-4 sm:space-y-6;
+    @apply w-full max-w-7xl space-y-5 sm:space-y-7;
   }
   .toolbar-row {
     @apply flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between;
@@ -76,11 +76,23 @@ video {
     @apply panel max-h-[92dvh] w-full max-w-lg overflow-y-auto rounded-b-none p-4 sm:rounded-2xl sm:p-5;
   }
   .safe-pb {
-    padding-bottom: calc(5.5rem + var(--safe-bottom));
+    padding-bottom: calc(6rem + var(--safe-bottom));
   }
   @media (min-width: 1024px) {
     .safe-pb {
-      padding-bottom: 1.5rem;
+      padding-bottom: 2rem;
+    }
+  }
+
+  @media (max-width: 399px) {
+    .home-tile-label {
+      font-size: 0.95rem;
+    }
+  }
+
+  @media (orientation: landscape) and (max-height: 500px) {
+    .safe-pb {
+      padding-bottom: calc(4.5rem + var(--safe-bottom));
     }
   }
 }

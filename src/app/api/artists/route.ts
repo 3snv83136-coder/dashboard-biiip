@@ -1,13 +1,13 @@
 import { requireSession } from "@/lib/api-auth";
 import { createId, nowIso } from "@/lib/ids";
-import { getStore } from "@/lib/store";
+import { loadStore, saveStore } from "@/lib/store";
 import type { ArtistLevel } from "@/lib/types";
 import { NextResponse } from "next/server";
 
 export async function GET() {
   const { error } = await requireSession(["admin", "staff"]);
   if (error) return error;
-  const store = getStore();
+  const store = await loadStore();
   return NextResponse.json({
     artists: store.artists.sort((a, b) =>
       a.stage_name.localeCompare(b.stage_name)
@@ -34,6 +34,13 @@ export async function POST(req: Request) {
     instagram_handle: String(body.instagram_handle || ""),
     tiktok_handle: String(body.tiktok_handle || ""),
     internal_notes: String(body.internal_notes || ""),
+    access_code: "",
+    access_code_updated_at: null,
+    access_last_login_at: null,
+    access_profile_completed_at: null,
+    technical_needs: "",
+    dietary_notes: "",
+    city: String(body.city || ""),
     created_at: ts,
     updated_at: ts,
   };
@@ -45,6 +52,8 @@ export async function POST(req: Request) {
     );
   }
 
-  getStore().artists.push(artist);
+  const store = await loadStore();
+  store.artists.push(artist);
+  await saveStore(store);
   return NextResponse.json({ artist }, { status: 201 });
 }

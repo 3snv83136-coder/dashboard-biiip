@@ -1,13 +1,13 @@
 import { requireSession } from "@/lib/api-auth";
 import { createId, nowIso } from "@/lib/ids";
-import { getStore } from "@/lib/store";
+import { loadStore, saveStore } from "@/lib/store";
 import type { MediaType } from "@/lib/types";
 import { NextResponse } from "next/server";
 
 export async function GET() {
   const { error } = await requireSession(["admin", "staff"]);
   if (error) return error;
-  const store = getStore();
+  const store = await loadStore();
   return NextResponse.json({
     media_assets: store.media_assets,
     shows: store.shows,
@@ -53,6 +53,8 @@ export async function POST(req: Request) {
     );
   }
 
-  getStore().media_assets.push(asset);
+  const store = await loadStore();
+  store.media_assets.push(asset);
+  await saveStore(store);
   return NextResponse.json({ media_asset: asset }, { status: 201 });
 }

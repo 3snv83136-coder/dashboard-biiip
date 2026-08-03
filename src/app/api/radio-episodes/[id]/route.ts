@@ -1,6 +1,6 @@
 import { requireSession } from "@/lib/api-auth";
 import { nowIso } from "@/lib/ids";
-import { getStore } from "@/lib/store";
+import { loadStore, saveStore } from "@/lib/store";
 import type { RadioEpisodeStatus } from "@/lib/types";
 import { NextResponse } from "next/server";
 
@@ -11,7 +11,7 @@ export async function GET(
   const { error } = await requireSession(["admin", "staff"]);
   if (error) return error;
 
-  const store = getStore();
+  const store = await loadStore();
   const episode = store.radio_episodes.find((e) => e._id === params.id);
   if (!episode) {
     return NextResponse.json(
@@ -38,7 +38,7 @@ export async function PATCH(
   const { error } = await requireSession(["admin", "staff"]);
   if (error) return error;
 
-  const store = getStore();
+  const store = await loadStore();
   const episode = store.radio_episodes.find((e) => e._id === params.id);
   if (!episode) {
     return NextResponse.json(
@@ -73,6 +73,7 @@ export async function PATCH(
   }
   episode.updated_at = nowIso();
 
+  await saveStore(store);
   return NextResponse.json({ radio_episode: episode });
 }
 
@@ -83,7 +84,7 @@ export async function DELETE(
   const { error } = await requireSession(["admin", "staff"]);
   if (error) return error;
 
-  const store = getStore();
+  const store = await loadStore();
   const idx = store.radio_episodes.findIndex((e) => e._id === params.id);
   if (idx === -1) {
     return NextResponse.json(
@@ -97,5 +98,6 @@ export async function DELETE(
     (g) => g.radio_episode_id !== params.id
   );
 
+  await saveStore(store);
   return NextResponse.json({ ok: true });
 }

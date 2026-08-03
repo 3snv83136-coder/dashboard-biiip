@@ -37,6 +37,14 @@ export interface Artist {
   instagram_handle: string;
   tiktok_handle: string;
   internal_notes: string;
+  /** Code d'accès portail fiche (partagé à la main / SMS / email). */
+  access_code: string;
+  access_code_updated_at: string | null;
+  access_last_login_at: string | null;
+  access_profile_completed_at: string | null;
+  technical_needs: string;
+  dietary_notes: string;
+  city: string;
   created_at: string;
   updated_at: string;
 }
@@ -121,6 +129,25 @@ export interface MediaAsset {
   site_slug: string;
   is_published: boolean;
   published_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Page « The Biiip Review » pour le site public (EN). */
+export interface SiteStory {
+  _id: string;
+  title_en: string;
+  title_fr: string;
+  slug: string;
+  body_text: string;
+  photo_urls: string[];
+  video_url: string;
+  show_id: string | null;
+  is_published: boolean;
+  published_at: string | null;
+  public_path: string;
+  site_target_url: string;
+  created_by: string;
   created_at: string;
   updated_at: string;
 }

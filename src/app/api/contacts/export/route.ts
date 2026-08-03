@@ -1,12 +1,13 @@
 import { requireSession } from "@/lib/api-auth";
-import { getStore } from "@/lib/store";
+import { loadStore } from "@/lib/store";
 import { NextResponse } from "next/server";
 
 export async function GET() {
   const { error } = await requireSession(["admin", "staff"]);
   if (error) return error;
 
-  const contacts = getStore().contacts;
+  const store = await loadStore();
+  const contacts = store.contacts;
   const header = [
     "full_name",
     "email",

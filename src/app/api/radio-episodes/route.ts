@@ -1,6 +1,6 @@
 import { requireSession } from "@/lib/api-auth";
 import { createId, nowIso } from "@/lib/ids";
-import { getStore } from "@/lib/store";
+import { loadStore, saveStore } from "@/lib/store";
 import type { RadioEpisode, RadioEpisodeStatus, RadioGuest } from "@/lib/types";
 import { NextResponse } from "next/server";
 
@@ -8,7 +8,7 @@ export async function GET() {
   const { error } = await requireSession(["admin", "staff"]);
   if (error) return error;
 
-  const store = getStore();
+  const store = await loadStore();
   return NextResponse.json({
     radio_episodes: store.radio_episodes.sort((a, b) =>
       a.episode_date.localeCompare(b.episode_date)
@@ -51,7 +51,7 @@ export async function POST(req: Request) {
     );
   }
 
-  const store = getStore();
+  const store = await loadStore();
   store.radio_episodes.push(episode);
 
   const guestsInput: Array<{
@@ -84,6 +84,7 @@ export async function POST(req: Request) {
     return guest;
   });
 
+  await saveStore(store);
   return NextResponse.json(
     { radio_episode: episode, radio_guests: createdGuests },
     { status: 201 }

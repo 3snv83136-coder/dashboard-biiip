@@ -1,6 +1,6 @@
 import { requireSession } from "@/lib/api-auth";
 import { createId, nowIso } from "@/lib/ids";
-import { getStore } from "@/lib/store";
+import { loadStore, saveStore } from "@/lib/store";
 import { parseWhatsAppArtistList } from "@/lib/whatsapp-import";
 import type { Artist } from "@/lib/types";
 import { NextResponse } from "next/server";
@@ -26,7 +26,7 @@ export async function POST(req: Request) {
     );
   }
 
-  const store = getStore();
+  const store = await loadStore();
   const existing = new Set(
     store.artists.map((a) => a.stage_name.toLowerCase())
   );
@@ -55,6 +55,13 @@ export async function POST(req: Request) {
       instagram_handle: "",
       tiktok_handle: "",
       internal_notes: "import whatsapp",
+      access_code: "",
+      access_code_updated_at: null,
+      access_last_login_at: null,
+      access_profile_completed_at: null,
+      technical_needs: "",
+      dietary_notes: "",
+      city: "",
       created_at: ts,
       updated_at: ts,
     };
@@ -62,6 +69,7 @@ export async function POST(req: Request) {
     created.push(artist);
   }
 
+  if (created.length) await saveStore(store);
   return NextResponse.json({
     created,
     skipped,

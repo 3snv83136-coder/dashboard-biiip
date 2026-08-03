@@ -12,6 +12,7 @@ const TITLES: Record<string, string> = {
   "/calendrier": "Calendrier / Planning",
   "/radio": "Émission radio",
   "/artistes": "Artistes",
+  "/fiches-artistes": "Fiches artistes",
   "/documents": "Documents",
   "/contacts": "Contacts",
   "/avis": "Avis Google",
@@ -48,7 +49,7 @@ export function DashboardShell({
           role={role}
           onMenu={() => setOpen(true)}
         />
-        <main className="safe-pb w-full flex-1 px-3 pt-4 sm:px-4 sm:pt-6 md:px-6">
+        <main className="safe-pb w-full flex-1 px-3 pt-4 sm:px-5 sm:pt-6 md:px-6 lg:px-8">
           <div className="mx-auto w-full max-w-7xl">{children}</div>
         </main>
         <MobileBottomNav role={role} onMore={() => setOpen(true)} />

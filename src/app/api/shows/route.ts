@@ -1,6 +1,6 @@
 import { requireSession } from "@/lib/api-auth";
 import { createId, nowIso } from "@/lib/ids";
-import { getStore } from "@/lib/store";
+import { loadStore, saveStore } from "@/lib/store";
 import type { BookingStatus, ShowType } from "@/lib/types";
 import { NextResponse } from "next/server";
 
@@ -8,7 +8,7 @@ export async function GET() {
   const { error } = await requireSession(["admin", "staff", "artist"]);
   if (error) return error;
 
-  const store = getStore();
+  const store = await loadStore();
   const session = (await requireSession())!.session!;
   let shows = store.shows;
   let bookings = store.show_bookings;
@@ -35,7 +35,7 @@ export async function POST(req: Request) {
   if (error || !session) return error;
 
   const body = await req.json();
-  const store = getStore();
+  const store = await loadStore();
   const ts = nowIso();
 
   const show = {
@@ -75,5 +75,6 @@ export async function POST(req: Request) {
     return booking;
   });
 
+  await saveStore(store);
   return NextResponse.json({ show, show_bookings: createdBookings }, { status: 201 });
 }

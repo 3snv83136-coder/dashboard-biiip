@@ -8,8 +8,18 @@ Back-office interne du **Biiip Comedy Club** (Toulon) — programmation, artiste
 
 - Next.js 14 (App Router) · TypeScript · Tailwind
 - Auth.js (NextAuth v5) — rôles `admin` / `staff` / `artist`
-- Store mémoire démo (MongoDB Atlas branchable via `MONGODB_URI`)
+- Store MongoDB Atlas (`MONGODB_URI`) — fallback mémoire si URI absente
 - Brevo (email + SMS) · Claude (génération de docs)
+
+## Installer sur l’ordinateur (comme une app)
+
+L’app est une **PWA** : pas besoin de l’App Store.
+
+1. Ouvre [https://dashboard-biiip.vercel.app](https://dashboard-biiip.vercel.app) dans **Chrome** ou **Edge**
+2. Clique l’icône **⊕ Installer** dans la barre d’adresse, ou menu **⋮ → Installer Dashboard Biiip…**
+3. Sur **Safari Mac** : **Fichier → Ajouter au Dock**
+
+Tu peux aussi utiliser le bouton **Installer sur cet ordinateur** (écran de connexion ou Réglages).
 
 ## Démarrage local
 

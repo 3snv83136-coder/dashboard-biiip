@@ -1,6 +1,6 @@
 import { requireSession } from "@/lib/api-auth";
 import { createId, nowIso } from "@/lib/ids";
-import { getStore } from "@/lib/store";
+import { loadStore, saveStore } from "@/lib/store";
 import type { ContactSource } from "@/lib/types";
 import { NextResponse } from "next/server";
 
@@ -12,7 +12,8 @@ export async function GET(req: Request) {
   const q = (searchParams.get("q") || "").toLowerCase();
   const tag = searchParams.get("tag") || "";
 
-  let contacts = getStore().contacts;
+  const store = await loadStore();
+  let contacts = store.contacts;
   if (q) {
     contacts = contacts.filter(
       (c) =>
@@ -59,6 +60,8 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Le nom est obligatoire" }, { status: 400 });
   }
 
-  getStore().contacts.push(contact);
+  const store = await loadStore();
+  store.contacts.push(contact);
+  await saveStore(store);
   return NextResponse.json({ contact }, { status: 201 });
 }
