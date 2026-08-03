@@ -174,20 +174,42 @@ Pages éditoriales « The Biiip Review » (L'avis du Biiip) pour le site public.
 | Champ | Type | Description |
 |---|---|---|
 | `_id` | objectId | Identifiant |
-| `title_en` | string | Titre anglais affiché sur le site (ex. `The Biiip Review`) |
+| `title_en` | string | Titre anglais de série (ex. `The Biiip Review`) |
 | `title_fr` | string | Titre FR interne (ex. `L'avis du Biiip`) |
+| `h1` | string | **H1 unique** de la page (SEO) |
 | `slug` | string | Slug URL (`the-biiip-review-…`) |
+| `meta_description` | string | Meta description (≤ 160 car.) |
 | `body_text` | string | Texte de la page |
 | `photo_urls` | array | 1 à 3 URLs photo |
 | `video_url` | string | URL vidéo (optionnel) |
+| `faqs` | array | FAQ `{ question, answer }` (E-E-A-T / schema FAQPage) |
+| `author_name` | string | Auteur éditorial (E-E-A-T) |
+| `about_org` | string | Description org. Biiip (E-E-A-T) |
+| `seo_json_ld` | object | JSON-LD Article + FAQPage (+ VideoObject) |
 | `show_id` | objectId \| null | Réf. `shows._id` si lié à une soirée |
 | `is_published` | bool | Publié / prêt pour le site |
 | `published_at` | date | Date de publication |
 | `public_path` | string | Chemin public dashboard (`/the-biiip-review/{slug}`) |
 | `site_target_url` | string | URL cible sur `biiipcomedyclub.fr` |
+| `generated_by` | enum | `claude` \| `manual` |
 | `created_by` | objectId | Réf. `users._id` |
 | `created_at` | date | Création |
 | `updated_at` | date | Mise à jour |
+
+---
+
+## Collection `uploads`
+Fichiers média uploadés (photos/vidéos compressées), **hors** du store principal (non effacés par `saveStore`).
+
+| Champ | Type | Description |
+|---|---|---|
+| `_id` | string | Identifiant (`upload_…`) |
+| `mime_type` | string | Ex. `image/jpeg` |
+| `data` | string | Contenu base64 |
+| `file_name` | string | Nom d’origine normalisé |
+| `created_at` | date | Création |
+
+URL publique : `/api/uploads/{_id}`.
 
 ---
 

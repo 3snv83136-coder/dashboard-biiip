@@ -8,8 +8,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 
-const HERO =
-  "https://images.unsplash.com/photo-1516280440614-6697288d5d38?w=1200&q=80";
+const HERO = "/biiip-fond.jpg";
 
 export default function FichesArtistesPage() {
   const [artists, setArtists] = useState<Artist[]>([]);

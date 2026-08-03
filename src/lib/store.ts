@@ -197,6 +197,24 @@ export async function saveStore(store?: DataStore): Promise<void> {
   await persistToMongo(store ?? getStore());
 }
 
+/** Upsert d'une seule story — évite de réécrire toute la base (lent / fragile). */
+export async function upsertSiteStory(story: SiteStory): Promise<void> {
+  const store = await loadStore();
+  if (!store.site_stories) store.site_stories = [];
+  const idx = store.site_stories.findIndex((s) => s._id === story._id);
+  if (idx >= 0) store.site_stories[idx] = story;
+  else store.site_stories.push(story);
+  global.__biiipStore = store;
+
+  if (!isMongoEnabled()) return;
+  await connectMongo();
+  await SiteStoryModel.findOneAndUpdate(
+    { _id: story._id },
+    { $set: story },
+    { upsert: true }
+  );
+}
+
 /**
  * Charge le store, exécute le handler, puis persiste si Mongo.
  */

@@ -1,22 +1,32 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import { notFound } from "next/navigation";
+import { auth } from "@/lib/auth";
+import { withStoryDefaults } from "@/lib/site-story";
 import { loadStore } from "@/lib/store";
 
 export async function generateMetadata({
   params,
+  searchParams,
 }: {
   params: { slug: string };
+  searchParams?: { preview?: string };
 }): Promise<Metadata> {
   const store = await loadStore();
-  const story = (store.site_stories ?? []).find((s) => s.slug === params.slug);
-  if (!story || !story.is_published) return { title: "The Biiip Review" };
+  const raw = (store.site_stories ?? []).find((s) => s.slug === params.slug);
+  if (!raw) return { title: "The Biiip Review" };
+
+  const canPreview = await canSeePreview(searchParams?.preview === "1");
+  if (!raw.is_published && !canPreview) {
+    return { title: "The Biiip Review" };
+  }
+
+  const story = withStoryDefaults(raw);
   return {
-    title: `${story.title_en} · Biiip Comedy Club`,
-    description: story.body_text.slice(0, 160),
+    title: `${story.h1} · Biiip Comedy Club`,
+    description: story.meta_description,
     openGraph: {
-      title: story.title_en,
-      description: story.body_text.slice(0, 160),
+      title: story.h1,
+      description: story.meta_description,
       images: story.photo_urls.slice(0, 1),
     },
   };
@@ -24,17 +34,37 @@ export async function generateMetadata({
 
 export default async function TheBiiipReviewPage({
   params,
+  searchParams,
 }: {
   params: { slug: string };
+  searchParams?: { preview?: string };
 }) {
   const store = await loadStore();
-  const story = (store.site_stories ?? []).find((s) => s.slug === params.slug);
-  if (!story || !story.is_published) notFound();
+  const raw = (store.site_stories ?? []).find((s) => s.slug === params.slug);
+  if (!raw) notFound();
 
+  const preview = searchParams?.preview === "1";
+  const canPreview = await canSeePreview(preview);
+  if (!raw.is_published && !canPreview) notFound();
+
+  const story = withStoryDefaults(raw);
   const youtubeId = extractYoutubeId(story.video_url);
 
   return (
     <main className="min-h-screen bg-[#031029] text-[#f5f5f7]">
+      {preview && !story.is_published ? (
+        <div className="bg-amber-500/20 px-4 py-2 text-center text-sm text-amber-100">
+          Aperçu brouillon — pas encore poussé sur le site
+        </div>
+      ) : null}
+
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(story.seo_json_ld),
+        }}
+      />
+
       <div
         className="relative min-h-[42vh] overflow-hidden"
         style={{
@@ -50,9 +80,15 @@ export default async function TheBiiipReviewPage({
             Biiip Comedy Club · Toulon
           </p>
           <h1 className="mt-3 font-[family-name:var(--font-syne)] text-4xl font-bold tracking-tight sm:text-5xl">
-            {story.title_en}
+            {story.h1}
           </h1>
-          <p className="mt-2 text-sm text-[#9eb6d4]">{story.title_fr}</p>
+          <p className="mt-2 text-sm text-[#9eb6d4]">
+            {story.title_en}
+            {story.title_fr ? ` · ${story.title_fr}` : ""}
+          </p>
+          <p className="mt-3 text-xs text-[#9eb6d4]">
+            Par {story.author_name}
+          </p>
         </div>
       </div>
 
@@ -65,19 +101,18 @@ export default async function TheBiiipReviewPage({
           <section className="grid gap-3 sm:grid-cols-2">
             {story.photo_urls.map((url, i) => (
               <div
-                key={`${url}-${i}`}
+                key={`${url.slice(0, 40)}-${i}`}
                 className={`relative overflow-hidden rounded-2xl bg-black/30 ${
                   i === 0 && story.photo_urls.length === 3
                     ? "sm:col-span-2 aspect-[21/9]"
                     : "aspect-[4/3]"
                 }`}
               >
-                <Image
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
                   src={url}
-                  alt={`${story.title_en} — photo ${i + 1}`}
-                  fill
-                  className="object-cover"
-                  unoptimized
+                  alt={`${story.h1} — photo ${i + 1}`}
+                  className="absolute inset-0 h-full w-full object-cover"
                 />
               </div>
             ))}
@@ -87,14 +122,14 @@ export default async function TheBiiipReviewPage({
         {story.video_url ? (
           <section className="space-y-3">
             <h2 className="font-[family-name:var(--font-syne)] text-xl font-semibold">
-              Watch
+              Vidéo
             </h2>
             {youtubeId ? (
               <div className="aspect-video overflow-hidden rounded-2xl bg-black">
                 <iframe
                   className="h-full w-full"
                   src={`https://www.youtube.com/embed/${youtubeId}`}
-                  title={story.title_en}
+                  title={story.h1}
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
                 />
@@ -106,14 +141,37 @@ export default async function TheBiiipReviewPage({
                 rel="noreferrer"
                 className="inline-flex rounded-xl border border-white/15 px-4 py-3 text-sm text-[#00d9ff]"
               >
-                Open video
+                Voir la vidéo
               </a>
             )}
           </section>
         ) : null}
 
+        {story.faqs.length ? (
+          <section className="space-y-4">
+            <h2 className="font-[family-name:var(--font-syne)] text-xl font-semibold">
+              FAQ
+            </h2>
+            <div className="space-y-3">
+              {story.faqs.map((faq, i) => (
+                <details
+                  key={`${faq.question}-${i}`}
+                  className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3"
+                >
+                  <summary className="cursor-pointer font-medium">
+                    {faq.question}
+                  </summary>
+                  <p className="mt-2 text-sm leading-relaxed text-[#c9d7ea]">
+                    {faq.answer}
+                  </p>
+                </details>
+              ))}
+            </div>
+          </section>
+        ) : null}
+
         <footer className="border-t border-white/10 pt-6 text-sm text-[#9eb6d4]">
-          <p>Biiip Comedy Club — cave vaulted stage, Toulon.</p>
+          <p>{story.about_org}</p>
           <a
             href="https://biiipcomedyclub.fr"
             className="mt-2 inline-block text-[#00d9ff] underline-offset-2 hover:underline"
@@ -124,6 +182,13 @@ export default async function TheBiiipReviewPage({
       </article>
     </main>
   );
+}
+
+async function canSeePreview(wantPreview: boolean): Promise<boolean> {
+  if (!wantPreview) return false;
+  const session = await auth();
+  const role = session?.user?.role;
+  return role === "admin" || role === "staff";
 }
 
 function extractYoutubeId(url: string): string | null {

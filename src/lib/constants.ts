@@ -123,8 +123,7 @@ export const STAFF_NAV = [
     label: "Fiches artistes",
     icon: "key",
     color: "#f5d76e",
-    image:
-      "https://images.unsplash.com/photo-1516280440614-6697288d5d38?w=800&q=80",
+    image: "/biiip-fond.jpg",
   },
   {
     href: "/documents",

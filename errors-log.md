@@ -17,6 +17,13 @@
 
 ## Entrées
 
+### [2026-08-03] FUNCTION_INVOCATION_TIMEOUT sur génération Médias (IA)
+- **Contexte** : Médias → « Générer le texte seulement » / « Créer l’aperçu (IA + page) » en prod Vercel Hobby
+- **Symptôme** : `An error occurred with your deployment FUNCTION_INVOCATION_TIMEOUT cdg1::…`
+- **Cause** : `callClaude` enchaînait plusieurs modèles (~6–8s chacun) → dépassait la limite ~10s des fonctions serverless
+- **Solution** : un seul modèle haiku (`fast: true`, timeout 4,5s) + `Promise.race` 5,5s avec brouillon local + fallback client si la réponse Vercel est déjà un timeout
+- **Prévention** : ne jamais enchaîner plusieurs appels Claude séquentiels dans une route Hobby ; toujours renvoyer un brouillon avant 10s
+
 ### [2026-07-29] create-next-app refuse le nom du dossier
 - **Contexte** : `npx create-next-app@14 .` dans `DASHBIIIP`
 - **Symptôme** : `Could not create a project called "DASHBIIIP" because of npm naming restrictions`

@@ -258,12 +258,13 @@ export default function MaFicheFormPage() {
                     ref={fileRef}
                     id={current.key}
                     type="file"
-                    accept="image/*"
+                    accept="image/*,.heic,.heif,.jpg,.jpeg,.png,.webp,.gif,.avif,.bmp,.tif,.tiff,.jfif"
                     capture="environment"
                     className="hidden"
-                    onChange={(e) =>
-                      void onPickPhoto(e.target.files?.[0] ?? null)
-                    }
+                    onChange={(e) => {
+                      void onPickPhoto(e.target.files?.[0] ?? null);
+                      e.target.value = "";
+                    }}
                   />
 
                   <button

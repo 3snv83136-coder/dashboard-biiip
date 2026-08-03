@@ -1,3 +1,4 @@
+import { withStoryDefaults } from "@/lib/site-story";
 import { loadStore } from "@/lib/store";
 import { NextResponse } from "next/server";
 
@@ -11,5 +12,5 @@ export async function GET(
   if (!story || !story.is_published) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
-  return NextResponse.json({ site_story: story });
+  return NextResponse.json({ site_story: withStoryDefaults(story) });
 }

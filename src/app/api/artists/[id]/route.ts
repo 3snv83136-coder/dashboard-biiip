@@ -71,3 +71,32 @@ export async function PATCH(
   await saveStore(store);
   return NextResponse.json({ artist });
 }
+
+export async function DELETE(
+  _req: Request,
+  { params }: { params: { id: string } }
+) {
+  const { error } = await requireSession(["admin"]);
+  if (error) return error;
+
+  const store = await loadStore();
+  const artist = store.artists.find((a) => a._id === params.id);
+  if (!artist) {
+    return NextResponse.json({ error: "Artiste introuvable" }, { status: 404 });
+  }
+
+  store.artists = store.artists.filter((a) => a._id !== params.id);
+  store.show_bookings = store.show_bookings.filter(
+    (b) => b.artist_id !== params.id
+  );
+  store.documents = store.documents.filter((d) => d.artist_id !== params.id);
+  for (const guest of store.radio_guests ?? []) {
+    if (guest.artist_id === params.id) {
+      guest.artist_id = null;
+      guest.updated_at = nowIso();
+    }
+  }
+
+  await saveStore(store);
+  return NextResponse.json({ ok: true });
+}

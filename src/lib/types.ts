@@ -134,19 +134,32 @@ export interface MediaAsset {
 }
 
 /** Page « The Biiip Review » pour le site public (EN). */
+export interface SiteStoryFaq {
+  question: string;
+  answer: string;
+}
+
 export interface SiteStory {
   _id: string;
   title_en: string;
   title_fr: string;
+  /** H1 unique de la page (SEO). */
+  h1: string;
   slug: string;
+  meta_description: string;
   body_text: string;
   photo_urls: string[];
   video_url: string;
+  faqs: SiteStoryFaq[];
+  author_name: string;
+  about_org: string;
+  seo_json_ld: Record<string, unknown>;
   show_id: string | null;
   is_published: boolean;
   published_at: string | null;
   public_path: string;
   site_target_url: string;
+  generated_by: "claude" | "manual";
   created_by: string;
   created_at: string;
   updated_at: string;
