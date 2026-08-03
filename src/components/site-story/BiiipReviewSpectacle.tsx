@@ -91,31 +91,23 @@ export function BiiipReviewSpectacle({
         </div>
       </header>
 
-      {/* Fond logo sur tout le reste de la page (sous le hero photo) */}
+      {/* Fond : un seul logo Biiip sous le hero photo */}
       <div className="relative z-10 isolate">
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0 -z-10 overflow-hidden bg-black"
         >
           <div
-            className="absolute inset-0 opacity-[0.55]"
+            className="absolute inset-0 opacity-[0.5]"
             style={{
               backgroundImage: "url(/biiip-logo-neon.png)",
               backgroundRepeat: "no-repeat",
-              backgroundPosition: "center 12%",
-              backgroundSize: "min(92vw, 720px)",
+              backgroundPosition: "center center",
+              backgroundSize: "min(85vw, 560px)",
+              backgroundAttachment: "fixed",
             }}
           />
-          <div
-            className="absolute inset-0 opacity-[0.22]"
-            style={{
-              backgroundImage: "url(/biiip-logo-neon.png)",
-              backgroundRepeat: "repeat-y",
-              backgroundPosition: "center top",
-              backgroundSize: "min(70vw, 480px)",
-            }}
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-[#020b1c]/75 via-transparent to-[#020b1c]/85" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/50" />
         </div>
 
       <article className="relative mx-auto max-w-3xl px-5 pb-24 pt-6 sm:px-8 sm:pb-32">
