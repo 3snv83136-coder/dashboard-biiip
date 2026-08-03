@@ -134,28 +134,34 @@ export function buildContextualFaqs(
   return ensureFactualFaqs([FAQ_LOCATION, ...chosen]).slice(0, 4);
 }
 
-/** Corps enrichi — jamais un simple collage des notes. */
+/** Corps très étoffé — chaque paragraphe = un « ACTE » lisible et développé. */
 export function buildEnrichedBody(
   notes: string,
   show?: Show | null
 ): string {
   const raw = notes.trim();
   const hook = raw
-    ? raw.length > 160
-      ? raw.slice(0, 157).trim() + "…"
+    ? raw.length > 220
+      ? `${raw.slice(0, 217).trim()}…`
       : raw
-    : "une soirée stand-up où la salle a vraiment répondu";
+    : "une soirée stand-up où la salle a vraiment répondu, punchline après punchline";
 
-  const showBit = show
-    ? `On revient sur ${show.title} (${show.show_date}, ${SHOW_TYPE_LABELS[show.show_type]}).`
-    : `Pas de fiche soirée liée : on part des notes de l’équipe pour raconter le live.`;
+  const showAct = show
+    ? `Ce soir-là, on était sur ${show.title} — ${SHOW_TYPE_LABELS[show.show_type]} du ${show.show_date}${show.start_time ? ` à ${show.start_time}` : ""}. Le genre de date qui reste dans le calendrier toulonnais parce qu’elle ressemble à une vraie petite salle parisienne, sans le train ni le ticket de métro.`
+    : `Pas de fiche soirée collée à cet avis : on part des notes de l’équipe et de ce qui se vit vraiment sous la voûte, au cœur de Toulon.`;
 
   return [
-    `Au ${VENUE_NAME}, cave voûtée de ${VENUE_CAPACITY} places au ${VENUE_FULL_ADDRESS}, la proximité n’est pas un slogan : tu es assez près pour sentir le set arriver.`,
-    showBit,
-    `Ce que l’équipe a retenu — « ${hook} » — donne le ton : rires qui rebondissent sous la voûte, public collé à la scène, zéro filet.`,
-    `Les sets restent serrés, les réactions sont vraies, et l’intimité fait le reste. C’est exactement pour ça que le Biiip existe à Toulon.`,
-    `Si tu cherches une soirée stand-up où l’on se souvient des punchlines autant que des visages autour, la cave du Biiip (${VENUE_NEAR}) est faite pour ça.`,
+    `À Toulon, le stand-up ne se joue pas toujours dans les grands plateaux. Au ${VENUE_NAME}, cave voûtée de ${VENUE_CAPACITY} places seulement au ${VENUE_FULL_ADDRESS} (${VENUE_NEAR}), la proximité n’est pas un argument marketing : c’est la règle du jeu. Tu descends, tu prends ta place, et tu te retrouves assez près de la scène pour sentir le micro chauffer, voir les yeux de l’artiste, et entendre le public réagir comme un seul corps. Ici, chaque set a l’air d’être écrit pour cette salle — serré, vivant, sans filet.`,
+
+    showAct,
+
+    `Ce que l’équipe a noté ce soir-là — « ${hook} » — donne immédiatement le ton. Pas un résumé froid : une sensation. Les rires rebondissent sous la pierre, les silences aussi. On entend quelqu’un souffler juste derrière, on voit une punchline arriver avant même qu’elle tombe, et on comprend pourquoi le Biiip existe : pour coller le stand-up à la peau, à hauteur d’humain, dans une cave où Toulon vient chercher autre chose que le bruit de la rue.`,
+
+    `Le stand-up, dans une salle de ${VENUE_CAPACITY} places, ça change tout. Les transitions sont plus sèches, les regards plus francs, les ratés plus assumés — et les réussites plus explosives. Au Biiip, le public n’est pas une masse au fond d’un balcon : c’est une meute bienveillante, collée à la scène, capable de porter un artiste ou de le pousser plus loin. C’est exactement l’intimité qu’on cherche quand on dit « comedy club » sans vouloir dire « grande salle avec écran géant ».`,
+
+    `Toulon a son rythme, sa lumière, sa façon d’arriver en retard et de rire fort. Le Biiip s’inscrit là-dedans : une adresse discrète, un lieu qui se mérite un peu, une soirée où l’on sort en se rappelant des phrases entières. On ne vient pas « consommer un spectacle » ; on vient vivre une heure de stand-up vrai, avec des sets qui avancent, des personnalités qui se frottent, et cette énergie un peu magique des caves où tout le monde est dans le même bateau.`,
+
+    `Si tu cherches une soirée stand-up à Toulon où l’on se souvient autant des punchlines que des visages autour, la cave du Biiip est faite pour ça. L’avis du Biiip, c’est justement ça : garder une trace chaude de ce qui s’est passé sous la voûte — l’ambiance, le fil des notes de l’équipe, et cette évidence qu’une petite salle bien calibrée peut faire plus de bruit, dans la tête, qu’une jauge de cinq cents personnes.`,
   ].join("\n\n");
 }
 

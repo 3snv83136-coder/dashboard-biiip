@@ -111,43 +111,48 @@ export async function generateSiteStoryContent(params: {
     : "Pas de soirée liée.";
   const staffText = notes.trim() || "soirée stand-up live au Biiip";
 
-  const prompt = `Tu es le rédacteur SEO du ${VENUE_NAME} (${VENUE_FULL_ADDRESS}, cave de ${VENUE_CAPACITY} places, ${VENUE_NEAR}).
+  const prompt = `Tu es le rédacteur éditorial du ${VENUE_NAME} (${VENUE_FULL_ADDRESS}, cave de ${VENUE_CAPACITY} places, ${VENUE_NEAR}).
 
-MISSION : transformer les NOTES STAFF en un vrai article éditorial enrichi (L'avis du Biiip).
-INTERDIT : recopier les notes telles quelles, coller un seul paragraphe court, inventer une autre adresse.
+MISSION : transformer les NOTES STAFF en un VRAI long article (L'avis du Biiip), très étoffé.
+INTERDIT : recopier les notes telles quelles, paragraphes courts d'1-2 phrases, inventer une autre adresse.
 
 NOTES STAFF:
 """${staffText}"""
 ${showLine}
 Médias : photo=${has_photo ? "oui" : "non"} · vidéo=${has_video ? "oui" : "non"}
 
-RÈGLES body_text :
-- 4 à 5 paragraphes courts en français, séparés par \\n\\n
-- Amplifie : ambiance, punchlines, public, intimité de la cave, ce qui ressort des notes
-- Ton chaleureux, direct, pro — pas de jargon SEO creux
+RÈGLES body_text (OBLIGATOIRE) :
+- Exactement 5 ou 6 paragraphes LONGS, séparés par \\n\\n
+- Chaque paragraphe = 4 à 7 phrases (environ 80 à 140 mots) — jamais un paragraphe maigre
+- Parle de Toulon, du stand-up live, de l'intimité de la cave, du public, des punchlines
+- Amplifie et développe les NOTES STAFF (ambiance, détails, sensations) sans les coller brutes
+- Ton chaleureux, cinéma, direct — pas de jargon SEO creux
+- Minimum ~900 mots au total pour body_text
 
 RÈGLES faqs (exactement 4) :
-- QUESTIONS NOUVELLES à chaque fois, en lien direct avec ces notes / cette soirée
-- Une FAQ « Où se trouve le Biiip Comedy Club ? » avec cette adresse EXACTE : ${VENUE_FULL_ADDRESS}
-- Les 3 autres FAQ doivent parler du contenu de l'avis (jamais les mêmes génériques)
+- QUESTIONS NOUVELLES, liées à ces notes / cette soirée
+- Une FAQ « Où se trouve le Biiip Comedy Club ? » avec adresse EXACTE : ${VENUE_FULL_ADDRESS}
+- Les 3 autres FAQ parlent du contenu de l'avis
 
 about_org = "${VENUE_ABOUT}"
 
-JSON UNIQUEMENT (pas de markdown) :
-{"title_en":"The Biiip Review","title_fr":"L'avis du Biiip","h1":"...","slug":"kebab-case","meta_description":"...max 155 car","body_text":"para1\\n\\npara2\\n\\npara3\\n\\npara4","faqs":[{"question":"...","answer":"..."},{"question":"...","answer":"..."},{"question":"...","answer":"..."},{"question":"...","answer":"..."}],"author_name":"Rédaction Biiip Comedy Club","about_org":"${VENUE_ABOUT}"}`;
+JSON UNIQUEMENT :
+{"title_en":"The Biiip Review","title_fr":"L'avis du Biiip","h1":"...","slug":"kebab-case","meta_description":"...max 155 car","body_text":"para1\\n\\npara2\\n\\npara3\\n\\npara4\\n\\npara5","faqs":[{"question":"...","answer":"..."},{"question":"...","answer":"..."},{"question":"...","answer":"..."},{"question":"...","answer":"..."}],"author_name":"Rédaction Biiip Comedy Club","about_org":"${VENUE_ABOUT}"}`;
 
   const text = await callClaude({
     prompt,
-    max_tokens: 1200,
-    timeout_ms: 6_500,
+    max_tokens: 2800,
+    timeout_ms: 7_500,
     fast: true,
   });
   if (text) {
     const parsed = parseStoryJson(text);
     if (parsed) {
+      const paras = parsed.body_text.split(/\n\n+/).filter(Boolean);
       const bodyTooThin =
-        parsed.body_text.split(/\n\n+/).filter(Boolean).length < 3 ||
-        parsed.body_text.trim().length < 280;
+        paras.length < 4 ||
+        parsed.body_text.trim().length < 900 ||
+        paras.some((p) => p.trim().length < 120);
       const copiedNotes =
         Boolean(notes.trim()) &&
         normalizeCmp(parsed.body_text) === normalizeCmp(notes);

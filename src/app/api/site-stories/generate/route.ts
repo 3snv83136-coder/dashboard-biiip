@@ -12,7 +12,7 @@ export const runtime = "nodejs";
 export const maxDuration = 10;
 
 /** Avant le kill Vercel : on force un brouillon local. */
-const HARD_DEADLINE_MS = 7_800;
+const HARD_DEADLINE_MS = 8_500;
 
 export async function POST(req: Request) {
   const { error } = await requireSession(["admin", "staff"]);
