@@ -1,7 +1,6 @@
 "use client";
 
 import { Button } from "@/components/ui/Button";
-import { EmptyState } from "@/components/ui/EmptyState";
 import {
   BIIIP_REVIEW_TITLE_EN,
   BIIIP_REVIEW_TITLE_FR,
@@ -9,9 +8,8 @@ import {
 } from "@/lib/constants";
 import { fileToJpegFile } from "@/lib/image-resize";
 import { localSiteStoryDraft } from "@/lib/site-story-draft";
-import type { MediaAsset, Show, SiteStory, SiteStoryFaq } from "@/lib/types";
+import type { Show, SiteStory, SiteStoryFaq } from "@/lib/types";
 import { ExternalLink, Sparkles, Trash2, Upload } from "lucide-react";
-import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 
 type StoryForm = {
@@ -77,7 +75,6 @@ function clientLocalDraft(notes: string, show?: Show | null): StoryForm {
 }
 
 export default function MediasPage() {
-  const [assets, setAssets] = useState<MediaAsset[]>([]);
   const [stories, setStories] = useState<SiteStory[]>([]);
   const [shows, setShows] = useState<Show[]>([]);
   const [form, setForm] = useState<StoryForm>(emptyForm);
@@ -88,16 +85,9 @@ export default function MediasPage() {
 
   const load = useCallback(async () => {
     try {
-      const [mediaRes, storyRes] = await Promise.all([
-        fetch("/api/media-assets"),
-        fetch("/api/site-stories"),
-      ]);
-      const mediaJson = await readApiJson(mediaRes);
+      const storyRes = await fetch("/api/site-stories");
       const storyJson = await readApiJson(storyRes);
-      setAssets((mediaJson.media_assets as MediaAsset[]) ?? []);
-      setShows(
-        ((mediaJson.shows as Show[]) ?? (storyJson.shows as Show[]) ?? [])
-      );
+      setShows((storyJson.shows as Show[]) ?? []);
       setStories((storyJson.site_stories as SiteStory[]) ?? []);
     } catch {
       setError("Impossible de charger les médias");
@@ -654,41 +644,6 @@ export default function MediasPage() {
           ))}
         </section>
       ) : null}
-
-      <section className="space-y-4">
-        <h3 className="font-display text-lg font-semibold">Galerie</h3>
-        {assets.length ? (
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {assets.map((asset) => (
-              <div key={asset._id} className="panel overflow-hidden">
-                <div className="relative aspect-video bg-black/30">
-                  {asset.media_type === "photo" && asset.file_url ? (
-                    <Image
-                      src={asset.file_url}
-                      alt={asset.alt_text || "Média Biiip"}
-                      fill
-                      className="object-cover"
-                      unoptimized
-                    />
-                  ) : (
-                    <div className="flex h-full items-center justify-center text-sm text-muted">
-                      Vidéo
-                    </div>
-                  )}
-                </div>
-                <div className="p-4 text-sm">
-                  {asset.caption || asset.alt_text}
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <EmptyState
-            title="Galerie vide"
-            description="Le flux principal est au-dessus."
-          />
-        )}
-      </section>
     </div>
   );
 }
