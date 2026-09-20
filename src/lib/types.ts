@@ -5,6 +5,7 @@ export type BookingStatus = "pressenti" | "confirme" | "paye";
 export type DocType = "conducteur" | "portrait" | "contrat_guso" | "fiche_technique";
 export type DocStatus = "draft" | "sent" | "signed";
 export type ContactSource = "soiree" | "billetweb" | "manuel" | "avis" | "import";
+export type MembershipStatus = "pending" | "active" | "lapsed" | "cancelled";
 export type SendStatus = "pending" | "sent" | "failed";
 export type MediaType = "photo" | "video";
 export type RadioEpisodeStatus = "draft" | "confirme" | "diffuse" | "archive";
@@ -100,6 +101,30 @@ export interface Contact {
   tags: string[];
   first_seen_at: string;
   last_seen_at: string;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Adhérent association Biiip Comedy Club. */
+export interface Member {
+  _id: string;
+  full_name: string;
+  email: string;
+  phone: string;
+  address_line: string;
+  postal_code: string;
+  city: string;
+  membership_fee_amount: number;
+  membership_status: MembershipStatus;
+  is_fee_paid: boolean;
+  fee_paid_at: string | null;
+  accepted_terms: boolean;
+  accepted_terms_at: string | null;
+  terms_version: string;
+  consent_communications: boolean;
+  joined_at: string;
+  internal_notes: string;
+  created_by: string;
   created_at: string;
   updated_at: string;
 }

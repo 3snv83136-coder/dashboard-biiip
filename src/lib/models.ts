@@ -4,6 +4,7 @@ import type {
   Contact,
   DocumentRecord,
   MediaAsset,
+  Member,
   RadioEpisode,
   RadioGuest,
   ReviewRequest,
@@ -31,6 +32,7 @@ export const ShowModel = modelOf<Show>("Show", "shows");
 export const ShowBookingModel = modelOf<ShowBooking>("ShowBooking", "show_bookings");
 export const DocumentModel = modelOf<DocumentRecord>("Document", "documents");
 export const ContactModel = modelOf<Contact>("Contact", "contacts");
+export const MemberModel = modelOf<Member>("Member", "members");
 export const ReviewRequestModel = modelOf<ReviewRequest>(
   "ReviewRequest",
   "review_requests"

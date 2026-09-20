@@ -3,6 +3,7 @@ import type {
   BookingStatus,
   ContactSource,
   DocType,
+  MembershipStatus,
   RadioEpisodeStatus,
   RadioGuestRole,
   ShowType,
@@ -74,6 +75,20 @@ export const CONTACT_SOURCE_LABELS: Record<ContactSource, string> = {
   manuel: "Manuel",
   avis: "Avis",
   import: "Import",
+};
+
+export const MEMBERSHIP_STATUS_LABELS: Record<MembershipStatus, string> = {
+  pending: "En attente",
+  active: "Actif",
+  lapsed: "Expiré",
+  cancelled: "Radié",
+};
+
+export const MEMBERSHIP_STATUS_COLORS: Record<MembershipStatus, string> = {
+  pending: "#ffb703",
+  active: "#3ddc97",
+  lapsed: "#9aa0b4",
+  cancelled: "#e94560",
 };
 
 export const RADIO_EPISODE_STATUS_LABELS: Record<RadioEpisodeStatus, string> = {
@@ -151,6 +166,14 @@ export const STAFF_NAV = [
     color: "#a855f7",
     image:
       "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=800&q=80",
+  },
+  {
+    href: "/adherents",
+    label: "Adhérents",
+    icon: "badge",
+    color: "#22d3ee",
+    image:
+      "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=800&q=80",
   },
   {
     href: "/avis",

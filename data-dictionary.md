@@ -198,6 +198,34 @@ Pages éditoriales « The Biiip Review » (L'avis du Biiip) pour le site public.
 
 ---
 
+## Collection `members`
+Adhérents de l’association Biiip Comedy Club (registre pour cotisation, communications, et vente de boissons à faible degré dans le cadre associatif).
+
+| Champ | Type | Description |
+|---|---|---|
+| `_id` | objectId | Identifiant |
+| `full_name` | string | Nom complet |
+| `email` | string | Email |
+| `phone` | string | Téléphone (E.164) |
+| `address_line` | string | Adresse postale (voie) |
+| `postal_code` | string | Code postal |
+| `city` | string | Ville |
+| `membership_fee_amount` | number | Montant cotisation (€) — 5 à la 1ʳᵉ adhésion |
+| `membership_status` | enum | `pending` \| `active` \| `lapsed` \| `cancelled` |
+| `is_fee_paid` | bool | Cotisation réglée |
+| `fee_paid_at` | date \| null | Date de paiement |
+| `accepted_terms` | bool | Acceptation des conditions d’adhésion |
+| `accepted_terms_at` | date \| null | Date d’acceptation |
+| `terms_version` | string | Version des conditions acceptées |
+| `consent_communications` | bool | Consentement envoi d’informations (email) |
+| `joined_at` | date | Date d’adhésion |
+| `internal_notes` | string | Notes internes staff |
+| `created_by` | objectId | Réf. `users._id` |
+| `created_at` | date | Création |
+| `updated_at` | date | Mise à jour |
+
+---
+
 ## Collection `uploads`
 Fichiers média uploadés (photos/vidéos compressées), **hors** du store principal (non effacés par `saveStore`).
 
@@ -285,6 +313,7 @@ Invités et intervenants liés à une émission radio.
 - `doc_type` : `conducteur`, `portrait`, `contrat_guso`, `fiche_technique`
 - `doc_status` : `draft`, `sent`, `signed`
 - `contacts.source` : `soiree`, `billetweb`, `manuel`, `avis`, `import`
+- `membership_status` : `pending`, `active`, `lapsed`, `cancelled`
 - `send_status` : `pending`, `sent`, `failed`
 - `media_type` : `photo`, `video`
 - `platform` : `instagram`, `facebook`, `tiktok`

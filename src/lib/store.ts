@@ -7,6 +7,7 @@ import {
   ContactModel,
   DocumentModel,
   MediaAssetModel,
+  MemberModel,
   RadioEpisodeModel,
   RadioGuestModel,
   ReviewRequestModel,
@@ -20,6 +21,7 @@ import type {
   Contact,
   DocumentRecord,
   MediaAsset,
+  Member,
   RadioEpisode,
   RadioGuest,
   ReviewRequest,
@@ -36,6 +38,7 @@ export interface DataStore {
   show_bookings: ShowBooking[];
   documents: DocumentRecord[];
   contacts: Contact[];
+  members: Member[];
   review_requests: ReviewRequest[];
   media_assets: MediaAsset[];
   radio_episodes: RadioEpisode[];
@@ -80,6 +83,7 @@ async function hydrateFromMongo(): Promise<DataStore> {
     radio_episodes,
     radio_guests,
     site_stories,
+    members,
   ] = await Promise.all([
     UserModel.find().lean(),
     ArtistModel.find().lean(),
@@ -92,6 +96,7 @@ async function hydrateFromMongo(): Promise<DataStore> {
     RadioEpisodeModel.find().lean(),
     RadioGuestModel.find().lean(),
     SiteStoryModel.find().lean(),
+    MemberModel.find().lean(),
   ]);
 
   return {
@@ -101,6 +106,7 @@ async function hydrateFromMongo(): Promise<DataStore> {
     show_bookings: asDocs<ShowBooking>(show_bookings),
     documents: asDocs<DocumentRecord>(documents),
     contacts: asDocs<Contact>(contacts),
+    members: asDocs<Member>(members),
     review_requests: asDocs<ReviewRequest>(review_requests),
     media_assets: asDocs<MediaAsset>(media_assets),
     radio_episodes: asDocs<RadioEpisode>(radio_episodes),
@@ -118,6 +124,7 @@ async function persistToMongo(store: DataStore): Promise<void> {
     ShowBookingModel.deleteMany({}),
     DocumentModel.deleteMany({}),
     ContactModel.deleteMany({}),
+    MemberModel.deleteMany({}),
     ReviewRequestModel.deleteMany({}),
     MediaAssetModel.deleteMany({}),
     RadioEpisodeModel.deleteMany({}),
@@ -139,6 +146,9 @@ async function persistToMongo(store: DataStore): Promise<void> {
       : null,
     store.contacts.length
       ? ContactModel.insertMany(store.contacts, { ordered: false })
+      : null,
+    store.members?.length
+      ? MemberModel.insertMany(store.members, { ordered: false })
       : null,
     store.review_requests.length
       ? ReviewRequestModel.insertMany(store.review_requests, { ordered: false })
@@ -167,6 +177,7 @@ export function getStore(): DataStore {
   if (!store.radio_episodes) store.radio_episodes = [];
   if (!store.radio_guests) store.radio_guests = [];
   if (!store.site_stories) store.site_stories = [];
+  if (!store.members) store.members = [];
   return store;
 }
 
@@ -187,6 +198,7 @@ export async function loadStore(): Promise<DataStore> {
   }
   store.artists = store.artists.map(ensureArtistAccessFields);
   if (!store.site_stories) store.site_stories = [];
+  if (!store.members) store.members = [];
   global.__biiipStore = store;
   return store;
 }
@@ -624,5 +636,6 @@ export function createSeedStore(): DataStore {
     radio_episodes: [radioEpisode1],
     radio_guests,
     site_stories: [],
+    members: [],
   };
 }

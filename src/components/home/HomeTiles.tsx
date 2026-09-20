@@ -3,6 +3,7 @@
 import { ARTIST_NAV, STAFF_NAV } from "@/lib/constants";
 import type { Role } from "@/lib/types";
 import {
+  BadgeCheck,
   CalendarDays,
   Contact,
   FileText,
@@ -23,6 +24,7 @@ const ICONS = {
   users: Users,
   file: FileText,
   contact: Contact,
+  badge: BadgeCheck,
   star: Star,
   image: ImageIcon,
   settings: Settings,
