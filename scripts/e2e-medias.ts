@@ -6,7 +6,7 @@ import { readFileSync } from "fs";
 import { resolve } from "path";
 
 const BASE = process.env.E2E_BASE || "https://dashboard-biiip.vercel.app";
-const PIN = process.env.E2E_PIN || "1076";
+const PIN = process.env.E2E_PIN || "";
 
 function jarFrom(setCookies: string[]): string {
   return setCookies
