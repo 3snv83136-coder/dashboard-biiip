@@ -195,9 +195,12 @@ export default function AdherentsPage() {
       <div>
         <h2 className="font-display text-2xl font-bold">Adhérents</h2>
         <p className="mt-1 text-sm text-muted">
-          Registre association — nom, adresse, email. Cotisation{" "}
-          {DEFAULT_MEMBERSHIP_FEE_AMOUNT}&nbsp;€ à la 1ʳᵉ adhésion. Utile pour
-          les infos club et le cadre de vente de boissons à faible degré.
+          Registre association. Adhésion gratuite : les inscriptions par QR code
+          (page publique{" "}
+          <a href="/adhesion" target="_blank" rel="noopener" className="text-cyan underline">
+            /adhesion
+          </a>
+          ) arrivent ici automatiquement avec leur numéro d&apos;adhérent.
         </p>
       </div>
 
@@ -282,7 +285,15 @@ export default function AdherentsPage() {
             <tbody>
               {members.map((m) => (
                 <tr key={m._id} className="border-b border-white/5">
-                  <td className="px-4 py-3 font-medium">{m.full_name}</td>
+                  <td className="px-4 py-3 font-medium">
+                    {m.full_name || <span className="text-muted">(sans nom)</span>}
+                    {m.member_number ? (
+                      <span className="block font-mono text-xs text-cyan">{m.member_number}</span>
+                    ) : null}
+                    {m.signup_source && m.signup_source !== "dashboard" ? (
+                      <span className="block text-xs text-muted">via {m.signup_source}</span>
+                    ) : null}
+                  </td>
                   <td className="px-4 py-3 text-muted">
                     {m.email}
                     <br />
@@ -293,9 +304,15 @@ export default function AdherentsPage() {
                     </span>
                   </td>
                   <td className="px-4 py-3 text-muted">
-                    {m.address_line}
-                    <br />
-                    {m.postal_code} {m.city}
+                    {m.address_line || m.city ? (
+                      <>
+                        {m.address_line}
+                        <br />
+                        {m.postal_code} {m.city}
+                      </>
+                    ) : (
+                      "—"
+                    )}
                   </td>
                   <td className="px-4 py-3">
                     {m.membership_fee_amount}&nbsp;€

@@ -33,7 +33,7 @@ Ouvre [http://localhost:3000](http://localhost:3000).
 
 ### Accès
 
-Mot de passe unique : `1076` (pas d’email).
+Mot de passe unique : défini dans la variable Vercel `APP_ACCESS_CODE` (pas d’email). Ne jamais l’écrire dans le dépôt.
 
 ## Écrans v1
 

@@ -13,6 +13,7 @@ import {
   Radio,
   Settings,
   Star,
+  Ticket,
   Users,
 } from "lucide-react";
 import Image from "next/image";
@@ -31,6 +32,7 @@ const ICONS = {
   home: Home,
   radio: Radio,
   key: KeyRound,
+  ticket: Ticket,
 } as const;
 
 export function HomeTiles() {

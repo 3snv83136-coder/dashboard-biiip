@@ -69,6 +69,36 @@ function asDocs<T>(rows: unknown[]): T[] {
   });
 }
 
+/**
+ * Ids d'adhérents présents au chargement de chaque store.
+ * Sert à ne supprimer QUE ce que le staff a retiré, et jamais un adhérent
+ * inscrit en parallèle via le formulaire public (QR code).
+ */
+const loadedMemberIds = new WeakMap<DataStore, Set<string>>();
+
+async function syncMembers(store: DataStore): Promise<void> {
+  const members = store.members ?? [];
+  const loaded = loadedMemberIds.get(store);
+  if (!loaded) {
+    // Store non issu de Mongo (seed / reset) : comportement historique.
+    await MemberModel.deleteMany({});
+    if (members.length) await MemberModel.insertMany(members, { ordered: false });
+    return;
+  }
+  const current = new Set(members.map((m) => m._id));
+  const removed = Array.from(loaded).filter((id) => !current.has(id));
+  if (removed.length) await MemberModel.deleteMany({ _id: { $in: removed } });
+  if (members.length) {
+    await MemberModel.bulkWrite(
+      members.map((m) => ({
+        replaceOne: { filter: { _id: m._id }, replacement: m, upsert: true },
+      })),
+      { ordered: false }
+    );
+  }
+  loadedMemberIds.set(store, current);
+}
+
 async function hydrateFromMongo(): Promise<DataStore> {
   await connectMongo();
   const [
@@ -99,7 +129,7 @@ async function hydrateFromMongo(): Promise<DataStore> {
     MemberModel.find().lean(),
   ]);
 
-  return {
+  const hydrated: DataStore = {
     users: asDocs<User>(users),
     artists: asDocs<Artist>(artists),
     shows: asDocs<Show>(shows),
@@ -113,6 +143,8 @@ async function hydrateFromMongo(): Promise<DataStore> {
     radio_guests: asDocs<RadioGuest>(radio_guests),
     site_stories: asDocs<SiteStory>(site_stories),
   };
+  loadedMemberIds.set(hydrated, new Set(hydrated.members.map((m) => m._id)));
+  return hydrated;
 }
 
 async function persistToMongo(store: DataStore): Promise<void> {
@@ -124,7 +156,6 @@ async function persistToMongo(store: DataStore): Promise<void> {
     ShowBookingModel.deleteMany({}),
     DocumentModel.deleteMany({}),
     ContactModel.deleteMany({}),
-    MemberModel.deleteMany({}),
     ReviewRequestModel.deleteMany({}),
     MediaAssetModel.deleteMany({}),
     RadioEpisodeModel.deleteMany({}),
@@ -147,9 +178,7 @@ async function persistToMongo(store: DataStore): Promise<void> {
     store.contacts.length
       ? ContactModel.insertMany(store.contacts, { ordered: false })
       : null,
-    store.members?.length
-      ? MemberModel.insertMany(store.members, { ordered: false })
-      : null,
+    syncMembers(store),
     store.review_requests.length
       ? ReviewRequestModel.insertMany(store.review_requests, { ordered: false })
       : null,

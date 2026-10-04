@@ -6,6 +6,7 @@ export type DocType = "conducteur" | "portrait" | "contrat_guso" | "fiche_techni
 export type DocStatus = "draft" | "sent" | "signed";
 export type ContactSource = "soiree" | "billetweb" | "manuel" | "avis" | "import";
 export type MembershipStatus = "pending" | "active" | "lapsed" | "cancelled";
+export type SeatReservationStatus = "confirmee" | "annulee" | "presente";
 export type SendStatus = "pending" | "sent" | "failed";
 export type MediaType = "photo" | "video";
 export type RadioEpisodeStatus = "draft" | "confirme" | "diffuse" | "archive";
@@ -122,6 +123,10 @@ export interface Member {
   accepted_terms_at: string | null;
   terms_version: string;
   consent_communications: boolean;
+  /** Numéro public d'adhérent (BIIIP-000123), présent sur la carte. */
+  member_number?: string;
+  /** Origine de l'adhésion : qr-salle, qr-bar, site, dashboard… */
+  signup_source?: string;
   joined_at: string;
   internal_notes: string;
   created_by: string;
@@ -232,4 +237,20 @@ export interface SessionUser {
   name: string;
   role: Role;
   artist_id: string | null;
+}
+
+/** Réservation gratuite d'un spectateur sur un show (≠ show_bookings = artistes). */
+export interface SeatReservation {
+  _id: string;
+  show_id: string;
+  full_name: string;
+  email: string;
+  seats_count: number;
+  reservation_status: SeatReservationStatus;
+  ticket_code: string;
+  accepted_terms_at: string;
+  has_requested_membership: boolean;
+  member_id: string | null;
+  created_at: string;
+  updated_at: string;
 }

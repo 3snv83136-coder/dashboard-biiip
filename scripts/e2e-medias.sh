@@ -19,7 +19,7 @@ curl -sS -c "$JAR" -b "$JAR" -o /dev/null \
   -X POST "$BASE/api/auth/callback/credentials" \
   -H "Content-Type: application/x-www-form-urlencoded" \
   --data-urlencode "csrfToken=$TOKEN" \
-  --data-urlencode "password=1076" \
+  --data-urlencode "password=${E2E_PIN:?Définir E2E_PIN}" \
   --data-urlencode "callbackUrl=$BASE/medias" \
   --data-urlencode "json=true"
 ROLE=$(curl -sS -b "$JAR" "$BASE/api/auth/session" | node -pe 'JSON.parse(require("fs").readFileSync(0,"utf8")).user?.role||"none"')

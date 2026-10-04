@@ -26,14 +26,7 @@ export async function PATCH(
   const ts = nowIso();
 
   if (body.full_name !== undefined) {
-    const name = String(body.full_name || "").trim();
-    if (!name) {
-      return NextResponse.json(
-        { error: "Le nom est obligatoire" },
-        { status: 400 }
-      );
-    }
-    member.full_name = name;
+    member.full_name = String(body.full_name || "").trim();
   }
   if (body.email !== undefined) member.email = String(body.email || "").trim();
   if (body.phone !== undefined) member.phone = String(body.phone || "").trim();
