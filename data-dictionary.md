@@ -199,7 +199,7 @@ Pages éditoriales « The Biiip Review » (L'avis du Biiip) pour le site public.
 ---
 
 ## Collection `members`
-Adhérents de l’association Biiip Comedy Club (registre pour cotisation, communications, et vente de boissons à faible degré dans le cadre associatif).
+Adhérents de l’association Biiip Comedy Club. **Adhésion gratuite depuis le 04/10/2026** : inscription publique par email seul (page `/adhesion`, QR code). Nom et adresse deviennent facultatifs.
 
 | Champ | Type | Description |
 |---|---|---|
@@ -210,19 +210,59 @@ Adhérents de l’association Biiip Comedy Club (registre pour cotisation, commu
 | `address_line` | string | Adresse postale (voie) |
 | `postal_code` | string | Code postal |
 | `city` | string | Ville |
-| `membership_fee_amount` | number | Montant cotisation (€) — 5 à la 1ʳᵉ adhésion |
+| `membership_fee_amount` | number | Montant cotisation (€) — 0 (adhésion gratuite) |
 | `membership_status` | enum | `pending` \| `active` \| `lapsed` \| `cancelled` |
 | `is_fee_paid` | bool | Cotisation réglée |
 | `fee_paid_at` | date \| null | Date de paiement |
 | `accepted_terms` | bool | Acceptation des conditions d’adhésion |
 | `accepted_terms_at` | date \| null | Date d’acceptation |
 | `terms_version` | string | Version des conditions acceptées |
-| `consent_communications` | bool | Consentement envoi d’informations (email) |
+| `consent_communications` | bool | Consentement envoi de la programmation (email) — case facultative, non pré-cochée |
+| `member_number` | string | Numéro public d’adhérent `BIIIP-000123` (compteur atomique `counters`) |
+| `signup_source` | string | Origine : `qr-salle`, `qr-bar`, `site`, `reservation`, `dashboard`… (paramètre `?src=`) |
 | `joined_at` | date | Date d’adhésion |
 | `internal_notes` | string | Notes internes staff |
 | `created_by` | objectId | Réf. `users._id` |
 | `created_at` | date | Création |
 | `updated_at` | date | Mise à jour |
+
+---
+
+## Collection `seat_reservations`
+Réservations **gratuites** de places par les spectateurs (≠ `show_bookings`, qui concerne les artistes). Écrites unitairement, **hors** `saveStore`.
+
+| Champ | Type | Description |
+|---|---|---|
+| `_id` | string | Identifiant (`resa_…`) — aussi utilisé dans l’URL du billet |
+| `show_id` | string | Réf. `shows._id` |
+| `full_name` | string | Nom du spectateur |
+| `email` | string | Email (minuscules) |
+| `seats_count` | number | Nombre de places (1 à 4) |
+| `reservation_status` | enum | `confirmee` \| `presente` \| `annulee` |
+| `ticket_code` | string | Code billet (12 caractères hexadécimaux), encodé dans le QR du billet |
+| `accepted_terms_at` | date | Acceptation du traitement des données |
+| `has_requested_membership` | bool | A coché « J’adhère » en réservant |
+| `member_id` | string \| null | Réf. `members._id` si adhésion |
+| `created_at` | date | Création |
+| `updated_at` | date | Mise à jour |
+
+## Collection `show_seat_counters`
+Compteur atomique de places prises par show (évite le surbooking).
+
+| Champ | Type | Description |
+|---|---|---|
+| `_id` | string | = `shows._id` |
+| `seats_reserved` | number | Places prises (réservations non annulées) |
+
+## Collection `counters`
+Compteurs séquentiels.
+
+| Champ | Type | Description |
+|---|---|---|
+| `_id` | string | Nom du compteur (`member_number`) |
+| `seq` | number | Dernière valeur attribuée |
+
+Champ optionnel ajouté à `shows` : `is_public_booking` (bool, défaut absent = ouvert) — mettre `false` pour masquer un show confirmé de la page publique.
 
 ---
 
@@ -314,6 +354,7 @@ Invités et intervenants liés à une émission radio.
 - `doc_status` : `draft`, `sent`, `signed`
 - `contacts.source` : `soiree`, `billetweb`, `manuel`, `avis`, `import`
 - `membership_status` : `pending`, `active`, `lapsed`, `cancelled`
+- `reservation_status` : `confirmee`, `presente`, `annulee`
 - `send_status` : `pending`, `sent`, `failed`
 - `media_type` : `photo`, `video`
 - `platform` : `instagram`, `facebook`, `tiktok`

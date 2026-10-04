@@ -8,9 +8,14 @@
 
 **Dashboard Biiip** : une web-app **interne** (back-office) pour piloter la programmation, les artistes, le fichier client, les avis Google et les médias du **Biiip Comedy Club** (cave voûtée de 19 places, Toulon).
 
-Il n'y a **AUCUN accès spectateur**. Les utilisateurs sont : le gérant, l'équipe (staff) et les artistes (accès limité à leur espace).
+Les utilisateurs du back-office sont : le gérant, l'équipe (staff) et les artistes (accès limité à leur espace).
 
-La billetterie **n'est pas** dans cette app : elle reste sur **Billetweb**. On ne fait qu'afficher un lien.
+**Exception validée par le gérant le 04/10/2026** : l'app expose aussi des **pages publiques spectateurs**, sans compte :
+- `/adhesion` (adhésion gratuite par email, via QR code) → `/adhesion/carte/[id]`, `/adhesion/conditions`
+- `/spectacles` → `/spectacles/[id]` (réservation **gratuite**, entrée gratuite) → `/spectacles/billet/[id]`
+Côté staff : écran **Réservations** (pointage, annulation, export).
+
+Toute écriture publique passe par `src/lib/public-store.ts` (écritures unitaires/atomiques). **Ne jamais appeler `saveStore`/`withStore` depuis une route publique** : il réécrit toute la base.
 
 ---
 
@@ -18,7 +23,7 @@ La billetterie **n'est pas** dans cette app : elle reste sur **Billetweb**. On n
 
 1. **⚠️ TOUJOURS consulter `data-dictionary.md` AVANT de nommer un nouveau champ, une nouvelle collection ou une nouvelle variable de données.** Si le nom existe déjà, réutilise-le à l'identique. Si tu crées un nouveau nom, ajoute-le au `data-dictionary.md` dans la même PR. Aucun champ ne doit exister dans le code sans exister dans le dictionnaire.
 2. **snake_case obligatoire** pour tout ce qui touche la donnée : collections MongoDB, champs de documents, clés JSON d'API, colonnes exportées. (Ex. `stage_name`, `show_date`, `review_requests`.) Voir §5.
-3. **Ne jamais réintroduire la billetterie, la caisse, la compta ou l'accès spectateur** : c'est explicitement hors périmètre (voir `feature-backlog.md`).
+3. **Pas de billetterie payante, de caisse ni de compta** dans cette app. Les seules pages spectateurs autorisées sont l'adhésion et la réservation gratuite (§1).
 4. **Ne jamais committer de secret** (clés API Brevo, Claude, Meta, URI MongoDB). Tout passe par les variables d'environnement Vercel. Voir `integrations.md`.
 5. **Contrôle des accès par rôle** : toute route/action doit vérifier le `role` (`admin`, `staff`, `artist`). Un artiste ne voit **que** ses propres soirées et documents.
 6. **Toute erreur non triviale rencontrée pendant le build est consignée** dans `errors-log.md` (cause + solution), pour ne pas la revivre.

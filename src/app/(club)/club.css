@@ -1,0 +1,58 @@
+/* Pages publiques du club (adhésion, réservation) — univers « Neon Grotto ». */
+.club-root {
+  --c-night: #1a1a2e;
+  --c-deep: #12121f;
+  --c-field: #22223b;
+  --c-line: #3a3a5c;
+  --c-text: #eceaf5;
+  --c-muted: #a9a6c4;
+  --c-pink: #ff3ea5;
+  --c-cyan: #4ff3ff;
+  min-height: 100dvh;
+  color: var(--c-text);
+  background: radial-gradient(120% 60% at 50% 0%, #2a2350 0%, #1a1a2e 55%, #12121f 100%);
+  padding: calc(20px + var(--safe-top)) 0 calc(32px + var(--safe-bottom));
+}
+.club-wrap { max-width: 440px; margin: 0 auto; padding: 0 22px; }
+.club-pink { color: var(--c-pink); text-shadow: 0 0 6px var(--c-pink), 0 0 22px rgba(255, 62, 165, 0.6); }
+.club-cyan { color: var(--c-cyan); text-shadow: 0 0 6px var(--c-cyan), 0 0 18px rgba(79, 243, 255, 0.5); }
+.club-logo { display: block; font-weight: 900; font-size: 58px; line-height: 0.95; letter-spacing: -1px; }
+.club-logo small { display: block; font-size: 19px; font-weight: 700; letter-spacing: 7px; margin-top: 4px; }
+.club-h1 { margin-top: 22px; font-size: 24px; font-weight: 700; line-height: 1.2; }
+.club-sub { margin-top: 8px; font-size: 15px; color: var(--c-muted); line-height: 1.45; }
+.club-badge { display: inline-block; margin-top: 14px; padding: 6px 12px; border: 1px solid var(--c-cyan); border-radius: 99px; color: var(--c-cyan); font-size: 13px; font-weight: 600; box-shadow: 0 0 12px rgba(79, 243, 255, 0.25); }
+.club-label { display: block; margin-top: 18px; font-size: 12px; font-weight: 600; color: var(--c-muted); letter-spacing: 0.4px; text-transform: uppercase; }
+.club-input { margin-top: 7px; width: 100%; height: 52px; border-radius: 12px; background: var(--c-field); border: 1.5px solid var(--c-line); padding: 0 16px; font-size: 16px; color: var(--c-text); outline: none; }
+.club-input:focus { border-color: var(--c-cyan); box-shadow: 0 0 0 1px rgba(79, 243, 255, 0.4); }
+.club-input::placeholder { color: #6f6c8c; }
+.club-check { display: flex; gap: 12px; margin-top: 16px; font-size: 15px; line-height: 1.4; align-items: flex-start; cursor: pointer; }
+.club-check input { flex: 0 0 22px; width: 22px; height: 22px; margin-top: 0; accent-color: var(--c-pink); }
+.club-check a, .club-link { color: var(--c-cyan); text-decoration: underline; }
+.club-btn { margin-top: 22px; width: 100%; min-height: 56px; border: 0; border-radius: 14px; background: var(--c-pink); color: #fff; font-weight: 700; font-size: 17px; box-shadow: 0 0 18px rgba(255, 62, 165, 0.55), 0 0 42px rgba(255, 62, 165, 0.25); cursor: pointer; }
+.club-btn:disabled { opacity: 0.6; cursor: wait; }
+.club-btn-ghost { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 18px; border-radius: 12px; border: 1.5px solid var(--c-line); color: var(--c-text); font-weight: 600; }
+.club-error { margin-top: 14px; padding: 10px 12px; border-radius: 10px; background: rgba(255, 62, 165, 0.12); border: 1px solid rgba(255, 62, 165, 0.5); font-size: 14px; }
+.club-fine { margin-top: 16px; font-size: 12px; color: #7a7798; line-height: 1.5; }
+.club-hp { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+.club-card { margin-top: 26px; border-radius: 22px; padding: 24px 22px; position: relative; overflow: hidden; background: linear-gradient(145deg, #24204a 0%, #1a1a2e 55%, #141428 100%); border: 1.5px solid var(--c-pink); box-shadow: 0 0 20px rgba(255, 62, 165, 0.45), inset 0 0 30px rgba(255, 62, 165, 0.08); }
+.club-card-role { margin-top: 24px; font-size: 12px; font-weight: 600; letter-spacing: 2px; color: var(--c-muted); text-transform: uppercase; }
+.club-card-num { margin-top: 4px; font-size: 30px; font-weight: 700; letter-spacing: 1px; font-variant-numeric: tabular-nums; }
+.club-row { display: flex; justify-content: space-between; gap: 12px; margin-top: 16px; font-size: 13px; color: var(--c-muted); }
+.club-row b { display: block; color: var(--c-text); font-size: 15px; margin-top: 2px; }
+.club-tick { width: 64px; height: 64px; margin: 0 auto; border-radius: 50%; border: 2px solid var(--c-cyan); display: flex; align-items: center; justify-content: center; font-size: 30px; box-shadow: 0 0 18px rgba(79, 243, 255, 0.4); }
+.club-center { text-align: center; }
+.club-show { display: block; margin-top: 14px; padding: 18px; border-radius: 16px; background: linear-gradient(135deg, #3b1f5e, #1f2a55 60%, #0f3b4a); border: 1px solid var(--c-line); }
+.club-show h2 { font-size: 22px; font-weight: 800; line-height: 1.15; }
+.club-chips { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+.club-chip { padding: 6px 11px; border-radius: 99px; background: var(--c-field); border: 1px solid var(--c-line); font-size: 13px; font-weight: 500; }
+.club-chip.free { border-color: var(--c-cyan); color: var(--c-cyan); }
+.club-chip.full { border-color: var(--c-pink); color: var(--c-pink); }
+.club-bar { flex: 1; height: 6px; border-radius: 3px; background: #2c2c48; overflow: hidden; }
+.club-bar i { display: block; height: 100%; background: var(--c-pink); box-shadow: 0 0 10px var(--c-pink); }
+.club-seats { display: flex; gap: 8px; margin-top: 7px; }
+.club-seat { flex: 1; height: 48px; border-radius: 12px; background: var(--c-field); border: 1.5px solid var(--c-line); color: var(--c-text); font-weight: 700; font-size: 16px; cursor: pointer; }
+.club-seat[aria-pressed="true"] { border-color: var(--c-pink); color: var(--c-pink); box-shadow: 0 0 10px rgba(255, 62, 165, 0.35); }
+.club-seat:disabled { opacity: 0.35; cursor: not-allowed; }
+.club-qr svg { width: 100%; height: 100%; display: block; }
+.club-qr { margin: 18px auto 0; width: 220px; height: 220px; border-radius: 16px; background: #fff; padding: 12px; }
+.club-terms { margin-top: 18px; white-space: pre-wrap; font-size: 14px; line-height: 1.6; color: #cfcce4; }

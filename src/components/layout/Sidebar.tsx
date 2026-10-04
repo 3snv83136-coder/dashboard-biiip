@@ -15,6 +15,7 @@ import {
   Radio,
   Settings,
   Star,
+  Ticket,
   Users,
   X,
 } from "lucide-react";
@@ -34,6 +35,7 @@ const ICONS = {
   home: Home,
   radio: Radio,
   key: KeyRound,
+  ticket: Ticket,
 } as const;
 
 export function Sidebar({

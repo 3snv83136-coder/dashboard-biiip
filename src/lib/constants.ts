@@ -176,6 +176,14 @@ export const STAFF_NAV = [
       "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=800&q=80",
   },
   {
+    href: "/reservations",
+    label: "Réservations",
+    icon: "ticket",
+    color: "#ff3ea5",
+    image:
+      "https://images.unsplash.com/photo-1503095396549-807759245b35?w=800&q=80",
+  },
+  {
     href: "/avis",
     label: "Avis Google",
     icon: "star",
@@ -211,3 +219,9 @@ export const ARTIST_NAV = [
       "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=800&q=80",
   },
 ] as const;
+
+export const SEAT_RESERVATION_STATUS_LABELS = {
+  confirmee: "Confirmée",
+  presente: "Présent",
+  annulee: "Annulée",
+} as const;

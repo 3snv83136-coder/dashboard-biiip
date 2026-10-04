@@ -15,6 +15,10 @@ export default auth((req) => {
   // Pages publiques
   if (
     path.startsWith("/the-biiip-review/") ||
+    path === "/adhesion" ||
+    path.startsWith("/adhesion/") ||
+    path === "/spectacles" ||
+    path.startsWith("/spectacles/") ||
     path === "/ma-fiche" ||
     path.startsWith("/ma-fiche/")
   ) {

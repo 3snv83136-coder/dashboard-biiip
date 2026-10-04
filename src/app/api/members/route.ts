@@ -6,6 +6,7 @@ import {
 import { createId, nowIso } from "@/lib/ids";
 import { loadStore, saveStore } from "@/lib/store";
 import type { MembershipStatus } from "@/lib/types";
+import { nextMemberNumber } from "@/lib/public-store";
 import { NextResponse } from "next/server";
 
 export async function GET(req: Request) {
@@ -65,22 +66,13 @@ export async function POST(req: Request) {
   const postal_code = String(body.postal_code || "").trim();
   const city = String(body.city || "").trim();
 
-  if (!full_name) {
-    return NextResponse.json({ error: "Le nom est obligatoire" }, { status: 400 });
-  }
   if (!email) {
     return NextResponse.json({ error: "L’email est obligatoire" }, { status: 400 });
   }
-  if (!address_line || !postal_code || !city) {
-    return NextResponse.json(
-      { error: "Adresse complète obligatoire (voie, CP, ville)" },
-      { status: 400 }
-    );
-  }
 
-  const membership_status: MembershipStatus = is_fee_paid
-    ? "active"
-    : "pending";
+  // Adhésion gratuite : active dès l'enregistrement, sauf cotisation attendue.
+  const membership_status: MembershipStatus =
+    is_fee_paid || membership_fee_amount <= 0 ? "active" : "pending";
 
   const member = {
     _id: createId("member"),
@@ -97,7 +89,9 @@ export async function POST(req: Request) {
     accepted_terms: true,
     accepted_terms_at: ts,
     terms_version: MEMBERSHIP_TERMS_VERSION,
-    consent_communications: Boolean(body.consent_communications ?? true),
+    consent_communications: Boolean(body.consent_communications ?? false),
+    member_number: await nextMemberNumber(),
+    signup_source: "dashboard",
     joined_at: ts,
     internal_notes: String(body.internal_notes || "").trim(),
     created_by: gate.session.user.id,

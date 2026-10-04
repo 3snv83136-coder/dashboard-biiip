@@ -38,6 +38,12 @@
 - **Solution** : `npm install next-auth@beta`
 - **Prévention** : vérifier le tag npm avant d’épingler une major
 
+### [2026-10-04] `saveStore` efface toute la base à chaque écriture
+- **Contexte** : ajout des formulaires publics (adhésion QR code, réservations)
+- **Symptôme** (risque) : `persistToMongo` fait `deleteMany({})` puis `insertMany` sur chaque collection ; un adhérent inscrit pendant qu'un membre du staff enregistre une modif serait effacé
+- **Solution** : routes publiques via `src/lib/public-store.ts` (upsert/`$inc` atomiques) ; collection `members` synchronisée par diff (`syncMembers` : ne supprime que les ids retirés par le staff) ; réservations dans des collections hors store
+- **Prévention** : toute nouvelle écriture à fort trafic ou publique = écriture unitaire, jamais `withStore`
+
 ---
 
 *(Journal actif.)*
