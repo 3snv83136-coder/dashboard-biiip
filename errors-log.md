@@ -39,6 +39,10 @@
 - **Solution** : Brevo → **Security → Authorised IPs** → **désactiver** la restriction IP (recommandé pour du serverless). Ne pas lister une IP Vercel : elle changera.
 - **Prévention** : documenter dans `integrations.md` ; SMTP ne contourne PAS l’allowlist IP si elle est active sur le compte
 
+### [2026-10-05] Brevo SMTP 501 Was expecting MAIL arg syntax of FROM:\<address\>
+- **Cause** : `BREVO_SENDER_EMAIL` mal formé (nom + email, guillemets, `<>` imbriqués) → commande SMTP `MAIL FROM` invalide
+- **Solution** : Vercel `BREVO_SENDER_EMAIL` = email seul validé dans Brevo Senders (ex. `biiipcomedyweb@gmail.com`) ; code parse aussi `Nom <email>`
+
 ### [2026-08-03] FUNCTION_INVOCATION_TIMEOUT sur génération Médias (IA)
 - **Contexte** : Médias → « Générer le texte seulement » / « Créer l’aperçu (IA + page) » en prod Vercel Hobby
 - **Symptôme** : `An error occurred with your deployment FUNCTION_INVOCATION_TIMEOUT cdg1::…`

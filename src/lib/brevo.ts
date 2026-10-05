@@ -33,6 +33,26 @@ function envVal(name: string): string {
     .trim();
 }
 
+/**
+ * Extrait une adresse email pure depuis BREVO_SENDER_EMAIL.
+ * Accepte `user@domaine.fr` ou `Nom <user@domaine.fr>`.
+ */
+function parseEmailAddress(raw: string): string | null {
+  const cleaned = raw.trim().replace(/^["']+|["']+$/g, "").trim();
+  if (!cleaned) return null;
+  const angle = cleaned.match(/<([^>]+)>/);
+  const candidate = (angle ? angle[1] : cleaned).trim().toLowerCase();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(candidate)) return null;
+  return candidate;
+}
+
+function senderAddress(): string {
+  return (
+    parseEmailAddress(envVal("BREVO_SENDER_EMAIL")) ||
+    "noreply@biiipcomedyclub.fr"
+  );
+}
+
 /** Clé SMTP Brevo (xsmtpsib-…) — recommandée sur Vercel (pas de filtre IP). */
 function smtpKey(): string {
   const dedicated = envVal("BREVO_SMTP_KEY");
@@ -108,9 +128,11 @@ async function sendViaSmtp(
   htmlContent: string
 ): Promise<EmailSendResult> {
   const pass = smtpKey();
-  const senderEmail =
-    envVal("BREVO_SENDER_EMAIL") || "noreply@biiipcomedyclub.fr";
-  const smtpLogin = envVal("BREVO_SMTP_LOGIN") || senderEmail;
+  const fromAddress = senderAddress();
+  const smtpLogin =
+    parseEmailAddress(envVal("BREVO_SMTP_LOGIN")) ||
+    envVal("BREVO_SMTP_LOGIN") ||
+    fromAddress;
 
   if (!pass) {
     return {
@@ -143,6 +165,17 @@ async function sendViaSmtp(
     };
   }
 
+  if (!parseEmailAddress(envVal("BREVO_SENDER_EMAIL") || fromAddress)) {
+    return {
+      ok: false,
+      simulated: false,
+      brevo_configured: true,
+      transport: "smtp",
+      error:
+        "BREVO_SENDER_EMAIL invalide. Mets uniquement l’email validé (ex. contact@domaine.fr), sans nom ni < >.",
+    };
+  }
+
   try {
     const transporter = nodemailer.createTransport({
       host: "smtp-relay.brevo.com",
@@ -152,12 +185,15 @@ async function sendViaSmtp(
       auth: { user: smtpLogin, pass },
     });
 
+    // Forme structurée + envelope : évite le 501 « Was expecting MAIL arg syntax of FROM:<address> »
+    // quand BREVO_SENDER_EMAIL contient déjà un nom / des < >.
     const info = await transporter.sendMail({
-      from: `"Biiip Comedy Club" <${senderEmail}>`,
+      from: { name: "Biiip Comedy Club", address: fromAddress },
       to,
       subject,
       html: htmlContent,
-      replyTo: senderEmail,
+      replyTo: fromAddress,
+      envelope: { from: fromAddress, to },
     });
 
     return {
@@ -172,6 +208,7 @@ async function sendViaSmtp(
     console.error("[brevo] SMTP failed", message, {
       to,
       smtpLogin,
+      fromAddress,
       key_len: pass.length,
     });
     const hint = /535|Authentication failed/i.test(message)
@@ -180,7 +217,9 @@ async function sendViaSmtp(
             message
           )
         ? " — Brevo bloque l’IP Vercel. Va dans Brevo → Security → Authorised IPs et DÉSACTIVE la restriction (obligatoire avec Vercel : les IP changent)."
-        : "";
+        : /501|MAIL arg syntax|FROM:<address>/i.test(message)
+          ? ` — FROM invalide (« ${fromAddress} »). Dans Vercel, BREVO_SENDER_EMAIL doit être un email seul, validé dans Brevo → Senders.`
+          : "";
     return {
       ok: false,
       simulated: false,
@@ -197,8 +236,7 @@ async function sendViaHttpApi(
   htmlContent: string
 ): Promise<EmailSendResult> {
   const apiKey = httpApiKey();
-  const senderEmail =
-    envVal("BREVO_SENDER_EMAIL") || "noreply@biiipcomedyclub.fr";
+  const fromAddress = senderAddress();
 
   if (!apiKey) {
     return {
@@ -219,7 +257,7 @@ async function sendViaHttpApi(
       Accept: "application/json",
     },
     body: JSON.stringify({
-      sender: { email: senderEmail, name: "Biiip Comedy Club" },
+      sender: { email: fromAddress, name: "Biiip Comedy Club" },
       to: [{ email: to }],
       subject,
       htmlContent,
@@ -228,7 +266,10 @@ async function sendViaHttpApi(
 
   if (!res.ok) {
     const text = await res.text();
-    console.error("[brevo] API failed", res.status, text, { to, senderEmail });
+    console.error("[brevo] API failed", res.status, text, {
+      to,
+      senderEmail: fromAddress,
+    });
     return {
       ok: false,
       simulated: false,
