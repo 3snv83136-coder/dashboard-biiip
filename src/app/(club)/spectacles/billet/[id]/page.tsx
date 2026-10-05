@@ -23,7 +23,7 @@ export default async function BilletPage({ params }: { params: { id: string } })
   const qrSvg = await QRCode.toString(`BIIIP:${resa.ticket_code}`, {
     type: "svg",
     margin: 0,
-    color: { dark: "#1a1a2e", light: "#ffffff" },
+    color: { dark: "#0b111c", light: "#ffffff" },
   });
 
   return (
@@ -38,8 +38,8 @@ export default async function BilletPage({ params }: { params: { id: string } })
         </p>
       </div>
 
-      <div className="club-card" style={{ borderColor: "var(--c-cyan)", boxShadow: "0 0 20px rgba(79,243,255,.35)" }}>
-        <ClubLogo size={32} />
+      <div className="club-card" style={{ borderColor: "var(--c-cyan)", boxShadow: "0 0 20px rgba(143,227,255,.35)" }}>
+        <ClubLogo size={76} />
         <div className="club-card-role">Billet · Entrée gratuite</div>
         <div style={{ marginTop: 6, fontSize: 22, fontWeight: 800 }}>{show.title}</div>
         <div className="club-row">

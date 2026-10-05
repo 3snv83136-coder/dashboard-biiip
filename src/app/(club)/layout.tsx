@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#1a1a2e",
+  themeColor: "#0b111c",
 };
 
 export default function ClubLayout({ children }: { children: React.ReactNode }) {

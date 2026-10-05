@@ -21,7 +21,7 @@ export default async function CartePage({ params }: { params: { id: string } }) 
       </div>
 
       <div className="club-card">
-        <ClubLogo size={40} />
+        <ClubLogo size={90} />
         <div className="club-card-role">Carte d&apos;adhérent</div>
         <div className="club-card-num">{member.member_number ?? "—"}</div>
         <div className="club-row">
@@ -30,7 +30,7 @@ export default async function CartePage({ params }: { params: { id: string } }) 
           </div>
           <div style={{ textAlign: "right" }}>
             Statut
-            <b className={isActive ? "club-cyan" : "club-pink"}>{isActive ? "● Actif" : "● Inactif"}</b>
+            <b className={isActive ? "club-cyan" : "club-blue"}>{isActive ? "● Actif" : "● Inactif"}</b>
           </div>
         </div>
       </div>

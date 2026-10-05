@@ -1,10 +1,14 @@
-export function ClubLogo({ size = 58 }: { size?: number }) {
+/* eslint-disable @next/next/no-img-element */
+/** Logo néon officiel du club (même fichier que le site). `size` = largeur en px. */
+export function ClubLogo({ size = 150 }: { size?: number }) {
   return (
-    <span className="club-logo club-pink" style={{ fontSize: size }}>
-      BIIIP
-      <small className="club-cyan" style={{ fontSize: Math.round(size / 3.05) }}>
-        COMEDY CLUB
-      </small>
-    </span>
+    <img
+      src="/biiip-logo-neon.png"
+      alt="Biiip Comedy Club"
+      width={size}
+      height={Math.round(size * 0.99)}
+      className="club-logo"
+      style={{ width: size }}
+    />
   );
 }

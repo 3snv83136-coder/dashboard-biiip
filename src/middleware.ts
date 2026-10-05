@@ -8,7 +8,11 @@ export default auth((req) => {
   const path = req.nextUrl.pathname;
   const session = req.auth;
 
-  if (path.startsWith("/api/") || path.startsWith("/_next")) {
+  if (
+    path.startsWith("/api/") ||
+    path.startsWith("/_next") ||
+    /\.(png|jpe?g|webp|svg|ico)$/i.test(path)
+  ) {
     return NextResponse.next();
   }
 
