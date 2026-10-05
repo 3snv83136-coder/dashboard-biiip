@@ -157,6 +157,7 @@ async function sendViaSmtp(
       to,
       subject,
       html: htmlContent,
+      replyTo: senderEmail,
     });
 
     return {

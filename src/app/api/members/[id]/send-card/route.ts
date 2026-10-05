@@ -41,9 +41,13 @@ export async function POST(
   return NextResponse.json({
     ok: true,
     simulated: result.simulated,
+    transport: result.transport,
+    provider_message_id: result.provider_message_id || null,
     email: member.email,
     message: result.simulated
       ? "BREVO_API_KEY absente — email simulé (pas réellement envoyé)"
-      : `Carte envoyée à ${member.email} ✅`,
+      : `Carte acceptée par Brevo pour ${member.email} (${result.transport || "smtp"}${
+          result.provider_message_id ? ` · id ${result.provider_message_id}` : ""
+        }). Si rien en boîte : spam + Brevo → Transactionnel.`,
   });
 }
