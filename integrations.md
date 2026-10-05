@@ -42,8 +42,14 @@
 ## 4. Brevo (email + SMS) — un seul fournisseur pour deux besoins
 - **Email** : envoi des documents aux artistes, liens magiques d'auth, cartes adhérents, confirmations de réservation.
 - **SMS** : module **avis Google** (numéro → SMS avec lien avis). Brevo fait du SMS transactionnel — on consolide ici plutôt que d'ajouter Twilio.
-- **Env** : `BREVO_SMTP_KEY` (email, `xsmtpsib-…`), `BREVO_SENDER_EMAIL`, `BREVO_API_KEY` (SMS / secours, `xkeysib-…`), `BREVO_SMS_SENDER`
-- **Transport email** : SMTP (`smtp-relay.brevo.com`) en priorité — contourne le filtre « Authorised IPs » qui casse Vercel. API HTTP en secours.
+- **Env** :
+  - `BREVO_SMTP_KEY` = clé SMTP complète (`xsmtpsib-…`, ~60+ car.)
+  - `BREVO_SMTP_LOGIN` = **login SMTP** affiché dans Brevo (souvent l’email du compte — pas forcément l’expéditeur)
+  - `BREVO_SENDER_EMAIL` = email expéditeur validé
+  - `BREVO_API_KEY` = clé API (`xkeysib-…`) pour SMS / secours
+  - `BREVO_SMS_SENDER`
+- **Transport email** : SMTP (`smtp-relay.brevo.com:587`) en priorité — contourne le filtre IP. API HTTP en secours.
+- ⚠️ Erreur `535 Authentication failed` = mauvais login ou clé SMTP incomplète / régénérée.
 - ⚠️ **Ne pas activer « Authorised IPs »** pour les clés API si tu utilises encore l’API HTTP.
 
 ## 5. API Claude (Anthropic)

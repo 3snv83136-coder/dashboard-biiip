@@ -28,6 +28,10 @@
 - **Cause** : clé SMTP (`xsmtpsib`) mise dans `BREVO_API_KEY`, ou clé API régénérée / obsolète
 - **Solution** : `BREVO_API_KEY` = `xkeysib-…` ; `BREVO_SMTP_KEY` = `xsmtpsib-…`
 
+### [2026-10-05] Brevo SMTP 535 Authentication failed
+- **Cause** : mauvais couple login/mot de passe SMTP — clé tronquée, ou `BREVO_SMTP_LOGIN` ≠ login SMTP affiché dans Brevo (souvent ≠ email expéditeur)
+- **Solution** : Brevo → SMTP & API → copier **Login** → `BREVO_SMTP_LOGIN` ; copier la clé SMTP **complète** → `BREVO_SMTP_KEY` ; redeploy
+
 ### [2026-08-03] FUNCTION_INVOCATION_TIMEOUT sur génération Médias (IA)
 - **Contexte** : Médias → « Générer le texte seulement » / « Créer l’aperçu (IA + page) » en prod Vercel Hobby
 - **Symptôme** : `An error occurred with your deployment FUNCTION_INVOCATION_TIMEOUT cdg1::…`

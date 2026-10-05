@@ -138,13 +138,21 @@ async function sendViaSmtp(
     };
   } catch (err) {
     const message = err instanceof Error ? err.message : "SMTP error";
-    console.error("[brevo] SMTP failed", message, { to, smtpLogin });
+    console.error("[brevo] SMTP failed", message, {
+      to,
+      smtpLogin,
+      key_prefix: pass.slice(0, 10),
+      key_len: pass.length,
+    });
+    const hint = /535|Authentication failed/i.test(message)
+      ? " — Vérifie BREVO_SMTP_LOGIN (= login SMTP Brevo, souvent l’email du compte) + BREVO_SMTP_KEY (= clé xsmtpsib complète, pas tronquée)."
+      : "";
     return {
       ok: false,
       simulated: false,
       brevo_configured: true,
       transport: "smtp",
-      error: `Brevo SMTP: ${message.slice(0, 280)}`,
+      error: `Brevo SMTP: ${message.slice(0, 200)}${hint}`,
     };
   }
 }
