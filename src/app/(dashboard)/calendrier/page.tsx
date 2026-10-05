@@ -5,6 +5,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import {
   BOOKING_STATUS_COLORS,
+  BOOKING_STATUS_LABELS,
   SHOW_TYPE_LABELS,
 } from "@/lib/constants";
 import type { Artist, BookingStatus, Show, ShowBooking, ShowType } from "@/lib/types";
@@ -386,11 +387,16 @@ export default function CalendrierPage() {
                     variant="secondary"
                     onClick={() => updateStatus(selected, status)}
                   >
-                    → {status}
+                    → {BOOKING_STATUS_LABELS[status]}
                   </Button>
                 )
               )}
             </div>
+            <p className="mt-3 text-xs text-muted">
+              Pour ouvrir les réservations publiques (/spectacles), passe le show en{" "}
+              <span className="text-cyan">Confirmé</span> ou{" "}
+              <span className="text-cyan">Payé</span>.
+            </p>
             <div className="mt-4 flex justify-end">
               <Button variant="ghost" onClick={() => setSelected(null)}>
                 Fermer
