@@ -43,6 +43,7 @@
 .club-card-tip i { font-style: normal; color: var(--c-cyan); }
 .club-card-hint { margin-top: 12px; font-size: 14px; color: var(--c-cyan); text-align: center; line-height: 1.4; }
 .club-card-role { margin-top: 24px; font-size: 12px; font-weight: 600; letter-spacing: 2px; color: var(--c-muted); text-transform: uppercase; }
+.club-card-name { margin-top: 10px; font-size: 20px; font-weight: 700; line-height: 1.2; }
 .club-card-num { margin-top: 4px; font-size: 30px; font-weight: 700; letter-spacing: 1px; font-variant-numeric: tabular-nums; }
 .club-row { display: flex; justify-content: space-between; gap: 12px; margin-top: 16px; font-size: 13px; color: var(--c-muted); }
 .club-row b { display: block; color: var(--c-text); font-size: 15px; margin-top: 2px; }

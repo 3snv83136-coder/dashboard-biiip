@@ -109,6 +109,9 @@ export interface Contact {
 /** Adhérent association Biiip Comedy Club. */
 export interface Member {
   _id: string;
+  /** Présent sur les nouvelles inscriptions ; peut être vide sur l’historique. */
+  first_name?: string;
+  last_name?: string;
   full_name: string;
   email: string;
   phone: string;

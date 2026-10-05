@@ -31,7 +31,16 @@ export async function POST(req: Request) {
     );
   }
 
+  const first_name = String(body.first_name || "").trim();
+  const last_name = String(body.last_name || "").trim();
   const email = normalizeEmail(String(body.email || ""));
+
+  if (first_name.length < 2 || first_name.length > 80) {
+    return NextResponse.json({ error: "Indique ton prénom." }, { status: 400 });
+  }
+  if (last_name.length < 2 || last_name.length > 80) {
+    return NextResponse.json({ error: "Indique ton nom." }, { status: 400 });
+  }
   if (!isValidEmail(email)) {
     return NextResponse.json({ error: "Cet email ne semble pas valide." }, { status: 400 });
   }
@@ -45,6 +54,8 @@ export async function POST(req: Request) {
   try {
     const { member, is_new } = await joinAsMember({
       email,
+      first_name,
+      last_name,
       consent_communications: body.consent_communications === true,
       signup_source: String(body.signup_source || "site").replace(/[^a-z0-9-]/gi, ""),
     });

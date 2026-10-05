@@ -122,16 +122,21 @@ async function ensureMemberNumber(member: Member): Promise<Member> {
 }
 
 /**
- * Adhésion gratuite par email. Idempotent : si l'email existe déjà,
- * on renvoie l'adhérent existant (pas de doublon).
+ * Adhésion gratuite. Prénom + nom + email obligatoires.
+ * Idempotent : si l'email existe déjà, on renvoie l'adhérent existant (pas de doublon).
  */
 export async function joinAsMember(input: {
   email: string;
-  full_name?: string;
+  first_name: string;
+  last_name: string;
   consent_communications: boolean;
   signup_source: string;
 }): Promise<{ member: Member; is_new: boolean }> {
   const email = normalizeEmail(input.email);
+  const first_name = input.first_name.trim().slice(0, 80);
+  const last_name = input.last_name.trim().slice(0, 80);
+  const full_name = `${first_name} ${last_name}`.trim();
+
   const existing = await findMemberByEmail(email);
   if (existing) {
     return { member: await ensureMemberNumber(existing), is_new: false };
@@ -140,7 +145,9 @@ export async function joinAsMember(input: {
   const ts = nowIso();
   const member: Member = {
     _id: createId("member"),
-    full_name: String(input.full_name || "").trim(),
+    first_name,
+    last_name,
+    full_name,
     email,
     phone: "",
     address_line: "",

@@ -199,13 +199,15 @@ Pages éditoriales « The Biiip Review » (L'avis du Biiip) pour le site public.
 ---
 
 ## Collection `members`
-Adhérents de l’association Biiip Comedy Club. **Adhésion gratuite depuis le 04/10/2026** : inscription publique par email seul (page `/adhesion`, QR code). Nom et adresse deviennent facultatifs.
+Adhérents de l’association Biiip Comedy Club. **Adhésion gratuite** : inscription publique via `/adhesion` (QR code). **Prénom, nom et email sont obligatoires** pour créer l’adhérent et envoyer la carte.
 
 | Champ | Type | Description |
 |---|---|---|
 | `_id` | objectId | Identifiant |
-| `full_name` | string | Nom complet |
-| `email` | string | Email |
+| `first_name` | string | Prénom (obligatoire à l’inscription) |
+| `last_name` | string | Nom de famille (obligatoire à l’inscription) |
+| `full_name` | string | Nom complet (`first_name` + `last_name`, pour affichage / recherche) |
+| `email` | string | Email (obligatoire) |
 | `phone` | string | Téléphone (E.164) |
 | `address_line` | string | Adresse postale (voie) |
 | `postal_code` | string | Code postal |

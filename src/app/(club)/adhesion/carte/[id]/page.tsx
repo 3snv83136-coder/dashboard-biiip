@@ -50,6 +50,9 @@ export default async function CartePage({ params }: { params: { id: string } }) 
         <div className="club-card">
           <ClubLogo size={90} />
           <div className="club-card-role">Carte d&apos;adhérent</div>
+          {member.full_name ? (
+            <div className="club-card-name">{member.full_name}</div>
+          ) : null}
           <div className="club-card-num">{member.member_number ?? "—"}</div>
           <div className="club-row">
             <div>

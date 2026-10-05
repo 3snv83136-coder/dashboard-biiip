@@ -24,6 +24,18 @@ export async function POST(
       { status: 400 }
     );
   }
+  const hasName =
+    Boolean(member.full_name?.trim()) ||
+    (Boolean(member.first_name?.trim()) && Boolean(member.last_name?.trim()));
+  if (!hasName) {
+    return NextResponse.json(
+      {
+        error:
+          "Prénom et nom manquants — complète la fiche avant d’envoyer la carte.",
+      },
+      { status: 400 }
+    );
+  }
 
   const cardUrl = `${publicOrigin(req)}/adhesion/carte/${member._id}`;
   const result = await sendWelcomeEmail(member, cardUrl);

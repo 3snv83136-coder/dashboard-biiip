@@ -60,9 +60,13 @@ export async function POST(req: Request) {
     let member_id: string | null = null;
     const wantsMembership = body.join_club === true;
     if (wantsMembership) {
+      const parts = full_name.split(/\s+/).filter(Boolean);
+      const first_name = parts[0] || full_name;
+      const last_name = parts.slice(1).join(" ") || first_name;
       const { member, is_new } = await joinAsMember({
         email,
-        full_name,
+        first_name,
+        last_name,
         consent_communications: false,
         signup_source: "reservation",
       });

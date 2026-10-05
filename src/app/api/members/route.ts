@@ -66,6 +66,12 @@ export async function POST(req: Request) {
   const postal_code = String(body.postal_code || "").trim();
   const city = String(body.city || "").trim();
 
+  if (!full_name || full_name.length < 2) {
+    return NextResponse.json(
+      { error: "Le nom est obligatoire" },
+      { status: 400 }
+    );
+  }
   if (!email) {
     return NextResponse.json({ error: "L’email est obligatoire" }, { status: 400 });
   }
@@ -74,8 +80,14 @@ export async function POST(req: Request) {
   const membership_status: MembershipStatus =
     is_fee_paid || membership_fee_amount <= 0 ? "active" : "pending";
 
+  const nameParts = full_name.split(/\s+/).filter(Boolean);
+  const first_name = nameParts[0] || full_name;
+  const last_name = nameParts.slice(1).join(" ") || "";
+
   const member = {
     _id: createId("member"),
+    first_name,
+    last_name,
     full_name,
     email,
     phone: String(body.phone || "").trim(),

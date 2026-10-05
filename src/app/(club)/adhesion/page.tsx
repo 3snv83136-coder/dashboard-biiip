@@ -18,7 +18,7 @@ export default function AdhesionPage({
         C&apos;est gratuit.
       </h1>
       <p className="club-sub">
-        Ton email, une case, un bouton. Ta carte d&apos;adhérent s&apos;affiche tout de suite.
+        Prénom, nom, email — et ta carte d&apos;adhérent s&apos;affiche tout de suite.
       </p>
       <span className="club-badge">⚡ 10 secondes</span>
       <JoinForm source={source || "site"} />

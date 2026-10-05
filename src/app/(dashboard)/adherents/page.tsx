@@ -367,9 +367,19 @@ export default function AdherentsPage() {
                       <Button
                         variant="secondary"
                         className="!px-2 !py-1 text-xs"
-                        disabled={busy || !m.email}
+                        disabled={
+                          busy ||
+                          !m.email ||
+                          !(m.full_name || (m.first_name && m.last_name))
+                        }
                         onClick={() => void sendCard(m)}
-                        title="Renvoyer la carte par email"
+                        title={
+                          !m.email
+                            ? "Email manquant"
+                            : !(m.full_name || (m.first_name && m.last_name))
+                              ? "Prénom / nom manquants"
+                              : "Renvoyer la carte par email"
+                        }
                       >
                         <Mail size={14} /> Carte
                       </Button>
