@@ -42,10 +42,9 @@
 ## 4. Brevo (email + SMS) — un seul fournisseur pour deux besoins
 - **Email** : envoi des documents aux artistes, liens magiques d'auth, cartes adhérents, confirmations de réservation.
 - **SMS** : module **avis Google** (numéro → SMS avec lien avis). Brevo fait du SMS transactionnel — on consolide ici plutôt que d'ajouter Twilio.
-- **Env** : `BREVO_API_KEY`, `BREVO_SENDER_EMAIL`, `BREVO_SMS_SENDER`
-- Écrit dans `review_requests` (`provider = brevo`, `provider_message_id`).
-- ⚠️ Le SMS marketing est encadré (RGPD / opt-in). L'avis Google se rattache à une venue réelle → garder une trace du consentement (`contacts.consent_marketing`).
-- ⚠️ **Ne pas activer « Authorised IPs »** dans Brevo Security : Vercel utilise des IP dynamiques. Sinon → `401 unrecognised IP address`. Laisser l’API ouverte (ou sans allowlist) pour l’hébergement serverless.
+- **Env** : `BREVO_SMTP_KEY` (email, `xsmtpsib-…`), `BREVO_SENDER_EMAIL`, `BREVO_API_KEY` (SMS / secours, `xkeysib-…`), `BREVO_SMS_SENDER`
+- **Transport email** : SMTP (`smtp-relay.brevo.com`) en priorité — contourne le filtre « Authorised IPs » qui casse Vercel. API HTTP en secours.
+- ⚠️ **Ne pas activer « Authorised IPs »** pour les clés API si tu utilises encore l’API HTTP.
 
 ## 5. API Claude (Anthropic)
 - **Rôle** : générer les documents « uniques dans le métier » (conducteur, portrait artiste, fiche technique) et, en v1.1, les légendes de posts.
