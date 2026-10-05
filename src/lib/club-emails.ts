@@ -22,13 +22,14 @@ export async function sendWelcomeEmail(
 ): Promise<EmailSendResult> {
   const inner = `
 <h1 style="font-size:22px;margin:26px 0 6px">Bienvenue au club !</h1>
-<p style="margin:0;color:#93a9c2;font-size:15px;line-height:1.5">Ton adhésion gratuite est validée. Montre ta carte à la buvette.</p>
+<p style="margin:0;color:#93a9c2;font-size:15px;line-height:1.5">Ton adhésion gratuite est validée. Ouvre ta carte, appuie sur <b style="color:#eaf6ff">Enregistrer sur mon téléphone</b> pour la garder dans Photos (ou en fond d’écran).</p>
 <div style="margin-top:22px;border:1.5px solid #19b2ea;border-radius:16px;padding:20px">
 <div style="font-size:11px;letter-spacing:2px;color:#93a9c2;font-weight:700">CARTE D'ADHÉRENT</div>
 <div style="font-size:28px;font-weight:700;margin-top:4px">${escapeHtml(member.member_number ?? "")}</div>
 <div style="font-size:13px;color:#93a9c2;margin-top:12px">Membre depuis <b style="color:#eaf6ff">${formatJoinDate(member.joined_at)}</b></div>
 </div>
-<p style="margin:22px 0 0"><a href="${cardUrl}" style="display:inline-block;background:#19b2ea;color:#04131f;text-decoration:none;font-weight:700;padding:14px 22px;border-radius:12px">Afficher ma carte</a></p>`;
+<p style="margin:22px 0 0"><a href="${cardUrl}" style="display:inline-block;background:#19b2ea;color:#04131f;text-decoration:none;font-weight:700;padding:14px 22px;border-radius:12px">Afficher ma carte</a></p>
+<p style="margin:14px 0 0;font-size:13px;color:#93a9c2;line-height:1.45">Astuce : sur iPhone, Safari → Partager → Sur l’écran d’accueil pour l’avoir en un tap.</p>`;
   try {
     const result = await sendDocumentEmail(
       member.email,
