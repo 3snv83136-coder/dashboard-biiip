@@ -175,7 +175,11 @@ async function sendViaSmtp(
     });
     const hint = /535|Authentication failed/i.test(message)
       ? ` — Login utilisé: ${smtpLogin} (clé len=${pass.length}). Dans Brevo → SMTP & API, copie exactement « Login » → BREVO_SMTP_LOGIN et génère une nouvelle clé SMTP → BREVO_SMTP_KEY, puis Redeploy.`
-      : "";
+      : /525|Unauthorized IP|unrecognised IP|authorised_ips|authorized_ips/i.test(
+            message
+          )
+        ? " — Brevo bloque l’IP Vercel. Va dans Brevo → Security → Authorised IPs et DÉSACTIVE la restriction (obligatoire avec Vercel : les IP changent)."
+        : "";
     return {
       ok: false,
       simulated: false,

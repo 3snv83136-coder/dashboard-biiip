@@ -50,7 +50,8 @@
   - `BREVO_SMS_SENDER`
 - **Transport email** : SMTP (`smtp-relay.brevo.com:587`) en priorité — contourne le filtre IP. API HTTP en secours.
 - ⚠️ Erreur `535 Authentication failed` = mauvais login ou clé SMTP incomplète / régénérée.
-- ⚠️ **Ne pas activer « Authorised IPs »** pour les clés API si tu utilises encore l’API HTTP.
+- ⚠️ Erreur `525 Unauthorized IP` = **Authorised IPs** activé dans Brevo. À **désactiver** (Vercel = IP dynamiques). SMTP ne contourne pas cette restriction.
+- ⚠️ **Ne pas activer « Authorised IPs »** (ni pour API ni pour SMTP) avec un hébergeur serverless.
 
 ## 5. API Claude (Anthropic)
 - **Rôle** : générer les documents « uniques dans le métier » (conducteur, portrait artiste, fiche technique) et, en v1.1, les légendes de posts.

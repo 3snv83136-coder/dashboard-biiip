@@ -32,6 +32,13 @@
 - **Cause** : mauvais couple login/mot de passe SMTP — clé tronquée, ou `BREVO_SMTP_LOGIN` ≠ login SMTP affiché dans Brevo (souvent ≠ email expéditeur)
 - **Solution** : Brevo → SMTP & API → copier **Login** → `BREVO_SMTP_LOGIN` ; copier la clé SMTP **complète** → `BREVO_SMTP_KEY` ; redeploy
 
+### [2026-10-05] Brevo SMTP 525 Unauthorized IP address
+- **Contexte** : envoi email depuis Vercel via SMTP
+- **Symptôme** : `525 5.7.1 Unauthorized IP address`
+- **Cause** : « Authorised IPs » activé dans Brevo Security ; Vercel sort depuis des IP AWS dynamiques
+- **Solution** : Brevo → **Security → Authorised IPs** → **désactiver** la restriction IP (recommandé pour du serverless). Ne pas lister une IP Vercel : elle changera.
+- **Prévention** : documenter dans `integrations.md` ; SMTP ne contourne PAS l’allowlist IP si elle est active sur le compte
+
 ### [2026-08-03] FUNCTION_INVOCATION_TIMEOUT sur génération Médias (IA)
 - **Contexte** : Médias → « Générer le texte seulement » / « Créer l’aperçu (IA + page) » en prod Vercel Hobby
 - **Symptôme** : `An error occurred with your deployment FUNCTION_INVOCATION_TIMEOUT cdg1::…`
