@@ -105,6 +105,25 @@ export default function CalendrierPage() {
     setSelected({ ...show, booking_status });
   }
 
+  async function deleteShow(show: Show) {
+    const ok = window.confirm(
+      `Retirer « ${show.title} » du ${show.show_date} ?\nLes réservations liées seront aussi supprimées.`
+    );
+    if (!ok) return;
+    setSaving(true);
+    setMessage("");
+    const res = await fetch(`/api/shows/${show._id}`, { method: "DELETE" });
+    setSaving(false);
+    if (!res.ok) {
+      const json = await res.json().catch(() => ({}));
+      setMessage(String(json.error || "Suppression impossible"));
+      return;
+    }
+    setSelected(null);
+    setMessage("Plateau retiré du calendrier ✅");
+    await load();
+  }
+
   const artistsForShow = (showId: string) => {
     const ids = (data?.show_bookings ?? [])
       .filter((b) => b.show_id === showId)
@@ -397,7 +416,14 @@ export default function CalendrierPage() {
               <span className="text-cyan">Confirmé</span> ou{" "}
               <span className="text-cyan">Payé</span>.
             </p>
-            <div className="mt-4 flex justify-end">
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
+              <Button
+                variant="danger"
+                disabled={saving}
+                onClick={() => void deleteShow(selected)}
+              >
+                Retirer du calendrier
+              </Button>
               <Button variant="ghost" onClick={() => setSelected(null)}>
                 Fermer
               </Button>

@@ -1,5 +1,6 @@
 import { requireSession } from "@/lib/api-auth";
 import { nowIso } from "@/lib/ids";
+import { purgeShowPublicData } from "@/lib/public-store";
 import { loadStore, saveStore } from "@/lib/store";
 import type { BookingStatus, ShowType } from "@/lib/types";
 import { NextResponse } from "next/server";
@@ -42,7 +43,7 @@ export async function DELETE(
   _req: Request,
   { params }: { params: { id: string } }
 ) {
-  const { error } = await requireSession(["admin"]);
+  const { error } = await requireSession(["admin", "staff"]);
   if (error) return error;
 
   const store = await loadStore();
@@ -56,5 +57,7 @@ export async function DELETE(
   store.documents = store.documents.filter((d) => d.show_id !== params.id);
 
   await saveStore(store);
+  await purgeShowPublicData(params.id);
+
   return NextResponse.json({ ok: true });
 }

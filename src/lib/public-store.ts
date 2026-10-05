@@ -398,6 +398,19 @@ export async function setReservationStatus(
   ).lean()) as SeatReservation | null) ?? null;
 }
 
+/** Nettoie résas + compteur de places d’un show (après suppression calendrier). */
+export async function purgeShowPublicData(show_id: string): Promise<void> {
+  if (!isMongoEnabled()) {
+    const st = mem();
+    st.reservations = st.reservations.filter((r) => r.show_id !== show_id);
+    delete st.seats[show_id];
+    return;
+  }
+  await connectMongo();
+  await SeatReservationModel.deleteMany({ show_id });
+  await SeatCounterModel.deleteOne({ _id: show_id });
+}
+
 /* ---------- anti-spam ---------- */
 
 const hits = new Map<string, number[]>();
