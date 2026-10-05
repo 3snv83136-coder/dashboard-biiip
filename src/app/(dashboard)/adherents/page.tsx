@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { AdhesionQrPanel } from "@/components/members/AdhesionQrPanel";
 import {
   MEMBERSHIP_STATUS_COLORS,
   MEMBERSHIP_STATUS_LABELS,
@@ -203,6 +204,8 @@ export default function AdherentsPage() {
           ) arrivent ici automatiquement avec leur numéro d&apos;adhérent.
         </p>
       </div>
+
+      <AdhesionQrPanel />
 
       <div className="toolbar-row">
         <div className="relative min-w-0 flex-1">
