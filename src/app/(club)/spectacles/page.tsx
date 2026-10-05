@@ -13,7 +13,7 @@ export default async function SpectaclesPage() {
 
   return (
     <>
-      <ClubLogo size={44} />
+      <ClubLogo size={110} />
       <h1 className="club-h1">Prochaines soirées</h1>
       <p className="club-sub">Entrée gratuite, 19 places seulement. Réserve la tienne.</p>
 

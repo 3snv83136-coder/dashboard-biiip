@@ -179,7 +179,7 @@ export const STAFF_NAV = [
     href: "/reservations",
     label: "Réservations",
     icon: "ticket",
-    color: "#ff3ea5",
+    color: "#19b2ea",
     image:
       "https://images.unsplash.com/photo-1503095396549-807759245b35?w=800&q=80",
   },

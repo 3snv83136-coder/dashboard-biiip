@@ -65,7 +65,7 @@ export default async function ShowPage({ params }: { params: { id: string } }) {
         <span className="club-chip free">Gratuit</span>
       </div>
       <div style={{ marginTop: 14, display: "flex", alignItems: "center", gap: 10, fontSize: 14, fontWeight: 600 }}>
-        <span className="club-pink">
+        <span className="club-blue">
           {left === 0 ? "Complet" : `${left} place${left > 1 ? "s" : ""} restante${left > 1 ? "s" : ""}`}
         </span>
         <div className="club-bar">

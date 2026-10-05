@@ -44,6 +44,13 @@
 - **Solution** : routes publiques via `src/lib/public-store.ts` (upsert/`$inc` atomiques) ; collection `members` synchronisée par diff (`syncMembers` : ne supprime que les ids retirés par le staff) ; réservations dans des collections hors store
 - **Prévention** : toute nouvelle écriture à fort trafic ou publique = écriture unitaire, jamais `withStore`
 
+### [2026-10-05] Logo du club invisible sur les pages publiques
+- **Contexte** : pages `/adhesion` et `/spectacles` affichant `/biiip-logo-neon.png`
+- **Symptôme** : image cassée (texte alternatif affiché) pour un visiteur non connecté
+- **Cause** : le middleware redirigeait toute requête sans session vers `/login`, y compris les fichiers de `public/`
+- **Solution** : le middleware laisse passer les fichiers image (`.png .jpg .webp .svg .ico`)
+- **Prévention** : toute page publique doit être testée en navigation privée (sans session)
+
 ---
 
 *(Journal actif.)*

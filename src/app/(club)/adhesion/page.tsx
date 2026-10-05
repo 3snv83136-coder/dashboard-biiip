@@ -11,7 +11,7 @@ export default function AdhesionPage({
   const source = (searchParams.src || "site").replace(/[^a-z0-9-]/gi, "").slice(0, 40);
   return (
     <>
-      <ClubLogo />
+      <ClubLogo size={140} />
       <h1 className="club-h1">
         Rejoins le club.
         <br />
