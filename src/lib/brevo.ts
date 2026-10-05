@@ -1,5 +1,13 @@
 import { DEFAULT_REVIEW_SMS_BODY } from "./constants";
 
+export type EmailSendResult = {
+  ok: boolean;
+  simulated: boolean;
+  brevo_configured: boolean;
+  error?: string;
+  provider_message_id?: string;
+};
+
 /** Normalise un numéro FR vers E.164 (+33…). */
 export function normalizePhoneE164(raw: string): string {
   const trimmed = raw.trim();
@@ -22,8 +30,10 @@ export async function sendReviewSms(phone: string, message?: string) {
 export async function sendTransactionalSms(phone: string, content: string) {
   const recipient = normalizePhoneE164(phone);
   const body = content.trim();
+  const apiKey = process.env.BREVO_API_KEY?.trim();
 
-  if (!process.env.BREVO_API_KEY) {
+  if (!apiKey) {
+    console.warn("[brevo] SMS simulé — BREVO_API_KEY absente");
     return {
       ok: true,
       simulated: true,
@@ -33,14 +43,13 @@ export async function sendTransactionalSms(phone: string, content: string) {
     };
   }
 
-  // Brevo : max 11 caractères alphanumériques (pas d'espace → "BiiipComedy")
   const sender = (process.env.BREVO_SMS_SENDER ?? "BiiipComedy")
     .trim()
     .slice(0, 11);
   const res = await fetch("https://api.brevo.com/v3/transactionalSMS/sms", {
     method: "POST",
     headers: {
-      "api-key": process.env.BREVO_API_KEY.trim(),
+      "x-api-key": apiKey,
       "Content-Type": "application/json",
       Accept: "application/json",
     },
@@ -71,21 +80,31 @@ export async function sendDocumentEmail(
   to: string,
   subject: string,
   htmlContent: string
-) {
-  if (!process.env.BREVO_API_KEY) {
-    return { ok: true, simulated: true };
+): Promise<EmailSendResult> {
+  const apiKey = process.env.BREVO_API_KEY?.trim();
+  const senderEmail =
+    process.env.BREVO_SENDER_EMAIL?.trim() || "noreply@biiipcomedyclub.fr";
+
+  if (!apiKey) {
+    console.warn(
+      "[brevo] Email simulé — BREVO_API_KEY absente. Destinataire:",
+      to
+    );
+    return { ok: true, simulated: true, brevo_configured: false };
   }
 
   const res = await fetch("https://api.brevo.com/v3/smtp/email", {
     method: "POST",
     headers: {
-      "api-key": process.env.BREVO_API_KEY,
+      // Brevo accepte api-key et x-api-key ; on envoie les deux pour compat.
+      "api-key": apiKey,
+      "x-api-key": apiKey,
       "Content-Type": "application/json",
       Accept: "application/json",
     },
     body: JSON.stringify({
       sender: {
-        email: process.env.BREVO_SENDER_EMAIL ?? "noreply@biiipcomedyclub.fr",
+        email: senderEmail,
         name: "Biiip Comedy Club",
       },
       to: [{ email: to }],
@@ -96,8 +115,25 @@ export async function sendDocumentEmail(
 
   if (!res.ok) {
     const text = await res.text();
-    throw new Error(`Brevo email failed: ${text}`);
+    console.error("[brevo] email failed", res.status, text, {
+      to,
+      senderEmail,
+    });
+    return {
+      ok: false,
+      simulated: false,
+      brevo_configured: true,
+      error: `Brevo ${res.status}: ${text.slice(0, 280)}`,
+    };
   }
 
-  return { ok: true, simulated: false };
+  const data = (await res.json().catch(() => ({}))) as {
+    messageId?: string | number;
+  };
+  return {
+    ok: true,
+    simulated: false,
+    brevo_configured: true,
+    provider_message_id: String(data.messageId ?? ""),
+  };
 }

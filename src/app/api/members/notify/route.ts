@@ -56,8 +56,17 @@ export async function POST(req: Request) {
 
   for (const m of targets) {
     try {
-      await sendDocumentEmail(m.email, subject, html);
-      sent += 1;
+      const result = await sendDocumentEmail(m.email, subject, html);
+      if (!result.ok) {
+        failed += 1;
+        errors.push(`${m.email}: ${result.error || "échec Brevo"}`);
+      } else if (result.simulated) {
+        // Compte comme envoyé côté UX mais on prévient
+        sent += 1;
+        errors.push(`${m.email}: simulé (BREVO_API_KEY absente)`);
+      } else {
+        sent += 1;
+      }
     } catch (err) {
       failed += 1;
       errors.push(
@@ -67,14 +76,16 @@ export async function POST(req: Request) {
   }
 
   return NextResponse.json({
-    ok: failed === 0,
+    ok: failed === 0 && !errors.some((e) => e.includes("simulé")),
     sent,
     failed,
     total: targets.length,
     errors: errors.slice(0, 5),
     message:
-      failed === 0
-        ? `Envoyé à ${sent} adhérent${sent > 1 ? "s" : ""} ✅`
-        : `Envoyé à ${sent}, ${failed} échec(s)`,
+      errors.some((e) => e.includes("simulé"))
+        ? `Simulation : BREVO_API_KEY manquante sur Vercel (${sent} destinataire(s))`
+        : failed === 0
+          ? `Envoyé à ${sent} adhérent${sent > 1 ? "s" : ""} ✅`
+          : `Envoyé à ${sent}, ${failed} échec(s)`,
   });
 }

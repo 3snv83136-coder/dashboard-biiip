@@ -162,6 +162,26 @@ export default function AdherentsPage() {
     }
   }
 
+  async function sendCard(m: Member) {
+    setBusy(true);
+    setError("");
+    setMessage("");
+    try {
+      const res = await fetch(`/api/members/${m._id}/send-card`, {
+        method: "POST",
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        throw new Error(String(json.error || "Envoi de la carte impossible"));
+      }
+      setMessage(String(json.message || "Carte envoyée ✅"));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erreur");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function sendNotify() {
     setBusy(true);
     setError("");
@@ -343,6 +363,15 @@ export default function AdherentsPage() {
                         onClick={() => openEdit(m)}
                       >
                         <Pencil size={14} /> Modifier
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        className="!px-2 !py-1 text-xs"
+                        disabled={busy || !m.email}
+                        onClick={() => void sendCard(m)}
+                        title="Renvoyer la carte par email"
+                      >
+                        <Mail size={14} /> Carte
                       </Button>
                       <Button
                         variant="danger"

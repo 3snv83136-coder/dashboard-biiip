@@ -39,7 +39,7 @@ export default async function CartePage({ params }: { params: { id: string } }) 
         Montre cette carte à la buvette 🍹
       </p>
       <p className="club-center club-sub" style={{ marginTop: 6, fontSize: 13 }}>
-        Elle t&apos;a aussi été envoyée par email.
+        Un email avec le lien vers ta carte t&apos;a été envoyé (vérifie aussi les spams).
       </p>
       <p className="club-center" style={{ marginTop: 22 }}>
         <Link href="/spectacles" className="club-btn-ghost">

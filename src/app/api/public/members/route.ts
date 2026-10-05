@@ -49,10 +49,32 @@ export async function POST(req: Request) {
       signup_source: String(body.signup_source || "site").replace(/[^a-z0-9-]/gi, ""),
     });
     const card_path = `/adhesion/carte/${member._id}`;
-    if (is_new) {
-      await sendWelcomeEmail(member, `${publicOrigin(req)}${card_path}`);
+
+    // Toujours tenter l'envoi de la carte (nouvel adhérent OU réinscription).
+    // Rate-limit email pour éviter le spam si quelqu'un recharge.
+    let email_status: "sent" | "simulated" | "skipped" | "failed" = "skipped";
+    let email_error: string | null = null;
+    const mailKey = `join-mail:${email}`;
+    if (!rateLimited(mailKey, 3, 60 * 60 * 1000)) {
+      const mail = await sendWelcomeEmail(
+        member,
+        `${publicOrigin(req)}${card_path}`
+      );
+      if (mail.ok && mail.simulated) email_status = "simulated";
+      else if (mail.ok) email_status = "sent";
+      else {
+        email_status = "failed";
+        email_error = mail.error || "Envoi impossible";
+      }
     }
-    return NextResponse.json({ ok: true, is_new, card_path });
+
+    return NextResponse.json({
+      ok: true,
+      is_new,
+      card_path,
+      email_status,
+      email_error,
+    });
   } catch (err) {
     console.error("[public/members]", err);
     return NextResponse.json(

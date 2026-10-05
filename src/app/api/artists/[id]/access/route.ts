@@ -103,6 +103,12 @@ export async function POST(
         "Ton accès fiche — Biiip Comedy Club",
         html
       );
+      if (!result.ok) {
+        return NextResponse.json(
+          { error: result.error || "Échec email Brevo" },
+          { status: 502 }
+        );
+      }
       await saveStore(store);
       return NextResponse.json({
         ok: true,

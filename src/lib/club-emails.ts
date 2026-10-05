@@ -1,4 +1,4 @@
-import { sendDocumentEmail } from "./brevo";
+import { sendDocumentEmail, type EmailSendResult } from "./brevo";
 import { escapeHtml, formatJoinDate, formatLongDate, formatTime } from "./club-format";
 import { VENUE_FULL_ADDRESS } from "./constants";
 import type { Member, SeatReservation, Show } from "./types";
@@ -15,8 +15,11 @@ ${inner}
 </td></tr></table></td></tr></table></body></html>`;
 }
 
-/** Email de bienvenue avec la carte d'adhérent. Ne lève jamais d'erreur. */
-export async function sendWelcomeEmail(member: Member, cardUrl: string): Promise<void> {
+/** Email de bienvenue avec la carte d'adhérent. */
+export async function sendWelcomeEmail(
+  member: Member,
+  cardUrl: string
+): Promise<EmailSendResult> {
   const inner = `
 <h1 style="font-size:22px;margin:26px 0 6px">Bienvenue au club !</h1>
 <p style="margin:0;color:#93a9c2;font-size:15px;line-height:1.5">Ton adhésion gratuite est validée. Montre ta carte à la buvette.</p>
@@ -27,18 +30,35 @@ export async function sendWelcomeEmail(member: Member, cardUrl: string): Promise
 </div>
 <p style="margin:22px 0 0"><a href="${cardUrl}" style="display:inline-block;background:#19b2ea;color:#04131f;text-decoration:none;font-weight:700;padding:14px 22px;border-radius:12px">Afficher ma carte</a></p>`;
   try {
-    await sendDocumentEmail(member.email, "Ta carte d'adhérent Biiip Comedy Club", shell(inner));
+    const result = await sendDocumentEmail(
+      member.email,
+      "Ta carte d'adhérent Biiip Comedy Club",
+      shell(inner)
+    );
+    if (!result.ok) {
+      console.error("[club-emails] bienvenue échec", result.error);
+    } else if (result.simulated) {
+      console.warn("[club-emails] bienvenue simulé (pas d’envoi réel)");
+    }
+    return result;
   } catch (err) {
+    const message = err instanceof Error ? err.message : "Erreur email";
     console.error("[club-emails] bienvenue", err);
+    return {
+      ok: false,
+      simulated: false,
+      brevo_configured: Boolean(process.env.BREVO_API_KEY?.trim()),
+      error: message,
+    };
   }
 }
 
-/** Confirmation de réservation avec lien vers le billet. Ne lève jamais d'erreur. */
+/** Confirmation de réservation avec lien vers le billet. */
 export async function sendReservationEmail(
   resa: SeatReservation,
   show: Show,
   ticketUrl: string
-): Promise<void> {
+): Promise<EmailSendResult> {
   const places = resa.seats_count > 1 ? `${resa.seats_count} places` : "1 place";
   const inner = `
 <h1 style="font-size:22px;margin:26px 0 6px">C'est réservé !</h1>
@@ -52,8 +72,23 @@ export async function sendReservationEmail(
 <p style="margin:22px 0 0"><a href="${ticketUrl}" style="display:inline-block;background:#19b2ea;color:#04131f;text-decoration:none;font-weight:700;padding:14px 22px;border-radius:12px">Afficher mon billet</a></p>
 <p style="margin:16px 0 0;font-size:13px;color:#93a9c2">Un empêchement ? Réponds à cet email pour libérer ta place : la salle ne fait que 19 places.</p>`;
   try {
-    await sendDocumentEmail(resa.email, `Réservation confirmée — ${show.title}`, shell(inner));
+    const result = await sendDocumentEmail(
+      resa.email,
+      `Réservation confirmée — ${show.title}`,
+      shell(inner)
+    );
+    if (!result.ok) {
+      console.error("[club-emails] réservation échec", result.error);
+    }
+    return result;
   } catch (err) {
+    const message = err instanceof Error ? err.message : "Erreur email";
     console.error("[club-emails] réservation", err);
+    return {
+      ok: false,
+      simulated: false,
+      brevo_configured: Boolean(process.env.BREVO_API_KEY?.trim()),
+      error: message,
+    };
   }
 }
