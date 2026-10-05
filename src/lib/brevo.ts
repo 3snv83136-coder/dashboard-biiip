@@ -25,18 +25,26 @@ export function normalizePhoneE164(raw: string): string {
   return digits;
 }
 
+/** Nettoie une valeur d’env (guillemets / espaces collés par erreur dans Vercel). */
+function envVal(name: string): string {
+  return (process.env[name] || "")
+    .trim()
+    .replace(/^["']+|["']+$/g, "")
+    .trim();
+}
+
 /** Clé SMTP Brevo (xsmtpsib-…) — recommandée sur Vercel (pas de filtre IP). */
 function smtpKey(): string {
-  const dedicated = process.env.BREVO_SMTP_KEY?.trim() || "";
+  const dedicated = envVal("BREVO_SMTP_KEY");
   if (dedicated) return dedicated;
-  const api = process.env.BREVO_API_KEY?.trim() || "";
+  const api = envVal("BREVO_API_KEY");
   if (api.startsWith("xsmtpsib-")) return api;
   return "";
 }
 
 /** Clé API HTTP Brevo (xkeysib-…) — SMS + API REST. */
 function httpApiKey(): string {
-  const api = process.env.BREVO_API_KEY?.trim() || "";
+  const api = envVal("BREVO_API_KEY");
   if (api.startsWith("xkeysib-")) return api;
   return "";
 }
@@ -101,8 +109,8 @@ async function sendViaSmtp(
 ): Promise<EmailSendResult> {
   const pass = smtpKey();
   const senderEmail =
-    process.env.BREVO_SENDER_EMAIL?.trim() || "noreply@biiipcomedyclub.fr";
-  const smtpLogin = process.env.BREVO_SMTP_LOGIN?.trim() || senderEmail;
+    envVal("BREVO_SENDER_EMAIL") || "noreply@biiipcomedyclub.fr";
+  const smtpLogin = envVal("BREVO_SMTP_LOGIN") || senderEmail;
 
   if (!pass) {
     return {
@@ -114,11 +122,33 @@ async function sendViaSmtp(
     };
   }
 
+  // Une vraie clé SMTP Brevo fait bien plus de 40 caractères.
+  if (!pass.startsWith("xsmtpsib-") || pass.length < 40) {
+    return {
+      ok: false,
+      simulated: false,
+      brevo_configured: true,
+      transport: "smtp",
+      error: `BREVO_SMTP_KEY invalide (len=${pass.length}). Copie la clé SMTP complète depuis Brevo → SMTP & API (pas la clé API xkeysib).`,
+    };
+  }
+
+  if (!smtpLogin.includes("@")) {
+    return {
+      ok: false,
+      simulated: false,
+      brevo_configured: true,
+      transport: "smtp",
+      error: `BREVO_SMTP_LOGIN invalide (« ${smtpLogin.slice(0, 40)} »). Copie le champ Login de Brevo → SMTP & API (email ou …@smtp-brevo.com).`,
+    };
+  }
+
   try {
     const transporter = nodemailer.createTransport({
       host: "smtp-relay.brevo.com",
       port: 587,
       secure: false,
+      requireTLS: true,
       auth: { user: smtpLogin, pass },
     });
 
@@ -141,18 +171,17 @@ async function sendViaSmtp(
     console.error("[brevo] SMTP failed", message, {
       to,
       smtpLogin,
-      key_prefix: pass.slice(0, 10),
       key_len: pass.length,
     });
     const hint = /535|Authentication failed/i.test(message)
-      ? " — Vérifie BREVO_SMTP_LOGIN (= login SMTP Brevo, souvent l’email du compte) + BREVO_SMTP_KEY (= clé xsmtpsib complète, pas tronquée)."
+      ? ` — Login utilisé: ${smtpLogin} (clé len=${pass.length}). Dans Brevo → SMTP & API, copie exactement « Login » → BREVO_SMTP_LOGIN et génère une nouvelle clé SMTP → BREVO_SMTP_KEY, puis Redeploy.`
       : "";
     return {
       ok: false,
       simulated: false,
       brevo_configured: true,
       transport: "smtp",
-      error: `Brevo SMTP: ${message.slice(0, 200)}${hint}`,
+      error: `Brevo SMTP: ${message.slice(0, 160)}${hint}`,
     };
   }
 }
@@ -164,7 +193,7 @@ async function sendViaHttpApi(
 ): Promise<EmailSendResult> {
   const apiKey = httpApiKey();
   const senderEmail =
-    process.env.BREVO_SENDER_EMAIL?.trim() || "noreply@biiipcomedyclub.fr";
+    envVal("BREVO_SENDER_EMAIL") || "noreply@biiipcomedyclub.fr";
 
   if (!apiKey) {
     return {
