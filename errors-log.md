@@ -17,6 +17,13 @@
 
 ## Entrées
 
+### [2026-10-05] Brevo 401 — unrecognised IP address (Vercel)
+- **Contexte** : envoi email carte adhérent / notifications depuis Vercel
+- **Symptôme** : `Brevo 401: We have detected you are using an unrecognised IP address 35.175.232.65… authorised_ips`
+- **Cause** : restriction « IP autorisées » activée dans Brevo ; les fonctions Vercel sortent depuis des IP dynamiques (AWS) non listées
+- **Solution** : dans Brevo → Security → Authorised IPs, désactiver le filtrage IP (recommandé pour du serverless) OU autoriser toutes les IP pour la clé API transactionnelle. Ne pas lister une seule IP Vercel : elle changera.
+- **Prévention** : documenter dans `integrations.md` ; ne jamais activer l’allowlist IP stricte avec un hébergeur serverless
+
 ### [2026-08-03] FUNCTION_INVOCATION_TIMEOUT sur génération Médias (IA)
 - **Contexte** : Médias → « Générer le texte seulement » / « Créer l’aperçu (IA + page) » en prod Vercel Hobby
 - **Symptôme** : `An error occurred with your deployment FUNCTION_INVOCATION_TIMEOUT cdg1::…`
