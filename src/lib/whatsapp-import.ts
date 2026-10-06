@@ -189,7 +189,7 @@ function parseSingleLine(line: string): ParsedArtistContact | null {
     text = text.replace(street[0], " ").replace(/,\s*,/g, ",").trim();
   }
 
-  let name = text
+  const name = text
     .replace(/[\s,;|/\\-]+$/g, "")
     .replace(/^[\s,;|/\\-]+/g, "")
     .trim();
