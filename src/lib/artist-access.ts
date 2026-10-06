@@ -21,4 +21,10 @@ export function generateArtistAccessCode(): string {
   return String(Math.floor(1000 + Math.random() * 9000));
 }
 
+/** Lien profond QR : scan → login auto sur /ma-fiche. */
+export function artistPortalDeepLink(origin: string, access_code: string) {
+  const code = encodeURIComponent(access_code.trim());
+  return `${origin}/ma-fiche?code=${code}`;
+}
+
 export const ARTIST_PORTAL_COOKIE = "biiip_artist_portal";

@@ -6,6 +6,7 @@ import { ARTIST_LEVEL_LABELS } from "@/lib/constants";
 import type { Artist, ArtistLevel } from "@/lib/types";
 import { ClipboardPaste, ImagePlus, Plus, Search } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 const empty = {
@@ -22,6 +23,7 @@ const empty = {
 };
 
 export default function ArtistesPage() {
+  const router = useRouter();
   const [artists, setArtists] = useState<Artist[]>([]);
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
@@ -68,8 +70,26 @@ export default function ArtistesPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(form),
     });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      setSaving(false);
+      return;
+    }
+    const id = json.artist?._id as string | undefined;
+    if (id) {
+      // Génère tout de suite le QR pour une première venue sur place
+      await fetch(`/api/artists/${id}/access`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "generate" }),
+      });
+      setSaving(false);
+      setOpen(false);
+      setForm(empty);
+      router.push(`/artistes/${id}`);
+      return;
+    }
     setSaving(false);
-    if (!res.ok) return;
     setOpen(false);
     setForm(empty);
     await load();
@@ -287,7 +307,13 @@ sara@mail.fr
       {open ? (
         <div className="modal-sheet">
           <div className="modal-panel">
-            <h3 className="font-display text-lg font-semibold">Nouvel artiste</h3>
+            <h3 className="font-display text-lg font-semibold">
+              Nouvel artiste (QR sur place)
+            </h3>
+            <p className="mt-1 text-sm text-muted">
+              Mets juste le nom de scène : on crée la fiche + le QR à flasher
+              tout de suite.
+            </p>
             <div className="mt-4 grid gap-3">
               {(
                 [

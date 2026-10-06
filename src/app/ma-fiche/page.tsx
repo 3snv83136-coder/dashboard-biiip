@@ -1,42 +1,69 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { FormEvent, Suspense, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
-export default function MaFicheLoginPage() {
+function MaFicheLoginInner() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [code, setCode] = useState("");
   const [forgot, setForgot] = useState(false);
   const [emailOrPhone, setEmailOrPhone] = useState("");
   const [busy, setBusy] = useState(false);
+  const [autoBusy, setAutoBusy] = useState(false);
   const [error, setError] = useState("");
   const [ok, setOk] = useState("");
+
+  async function loginWithCode(raw: string) {
+    const access_code = raw.replace(/\D/g, "").slice(0, 4);
+    if (access_code.length < 4) {
+      setError("Code incorrect");
+      return false;
+    }
+    const res = await fetch("/api/artist-portal", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "login", access_code }),
+    });
+    const json = await res.json();
+    if (!res.ok) {
+      setError(json.error || "Code incorrect");
+      return false;
+    }
+    router.replace("/ma-fiche/formulaire");
+    return true;
+  }
 
   useEffect(() => {
     void (async () => {
       const res = await fetch("/api/artist-portal");
       const json = await res.json();
-      if (json.authenticated) router.replace("/ma-fiche/formulaire");
+      if (json.authenticated) {
+        router.replace("/ma-fiche/formulaire");
+        return;
+      }
+
+      const fromQr = (searchParams.get("code") || "")
+        .replace(/\D/g, "")
+        .slice(0, 4);
+      if (fromQr.length === 4) {
+        setCode(fromQr);
+        setAutoBusy(true);
+        setError("");
+        await loginWithCode(fromQr);
+        setAutoBusy(false);
+      }
     })();
-  }, [router]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [router, searchParams]);
 
   async function onLogin(e: FormEvent) {
     e.preventDefault();
     setBusy(true);
     setError("");
     setOk("");
-    const res = await fetch("/api/artist-portal", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "login", access_code: code }),
-    });
-    const json = await res.json();
+    await loginWithCode(code);
     setBusy(false);
-    if (!res.ok) {
-      setError(json.error || "Code incorrect");
-      return;
-    }
-    router.push("/ma-fiche/formulaire");
   }
 
   async function onForgot(e: FormEvent) {
@@ -69,10 +96,16 @@ export default function MaFicheLoginPage() {
         <div className="spectacle-card space-y-5">
           <div>
             <h1 className="spectacle-title">Biiip</h1>
-            <p className="spectacle-sub">Entre ton code pour remplir ta fiche</p>
+            <p className="spectacle-sub">
+              {autoBusy
+                ? "Connexion via QR…"
+                : "Entre ton code ou flash le QR du Biiip"}
+            </p>
           </div>
 
-          {!forgot ? (
+          {autoBusy ? (
+            <p className="text-center text-sm text-white/70">Un instant…</p>
+          ) : !forgot ? (
             <form onSubmit={onLogin} className="space-y-4">
               <div>
                 <label className="spectacle-label" htmlFor="code">
@@ -150,5 +183,19 @@ export default function MaFicheLoginPage() {
         </div>
       </div>
     </>
+  );
+}
+
+export default function MaFicheLoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="spectacle-shell">
+          <p className="text-center text-white/70">Chargement…</p>
+        </div>
+      }
+    >
+      <MaFicheLoginInner />
+    </Suspense>
   );
 }

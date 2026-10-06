@@ -1,17 +1,19 @@
 import { requireSession } from "@/lib/api-auth";
-import { generateArtistAccessCode } from "@/lib/artist-access";
+import {
+  artistPortalDeepLink,
+  generateArtistAccessCode,
+} from "@/lib/artist-access";
 import { sendDocumentEmail, sendTransactionalSms } from "@/lib/brevo";
 import { nowIso } from "@/lib/ids";
 import { loadStore, saveStore } from "@/lib/store";
 import { NextResponse } from "next/server";
 
-function portalUrl(req: Request) {
-  const origin = new URL(req.url).origin;
-  return `${origin}/ma-fiche`;
+function portalBase(req: Request) {
+  return new URL(req.url).origin;
 }
 
-function accessMessage(stageName: string, code: string, link: string) {
-  return `Salut ${stageName} ! Fiche Biiip : ${link} — code ${code}`;
+function accessMessage(stageName: string, code: string, deepLink: string) {
+  return `Salut ${stageName} ! Complète ta fiche Biiip en flashant ce lien : ${deepLink} (code ${code})`;
 }
 
 export async function POST(
@@ -29,21 +31,22 @@ export async function POST(
     return NextResponse.json({ error: "Artiste introuvable" }, { status: 404 });
   }
 
-  const link = portalUrl(req);
+  const origin = portalBase(req);
 
   if (action === "generate" || action === "reset") {
     artist.access_code = generateArtistAccessCode();
     artist.access_code_updated_at = nowIso();
     artist.updated_at = artist.access_code_updated_at;
     await saveStore(store);
+    const deep = artistPortalDeepLink(origin, artist.access_code);
     return NextResponse.json({
       artist,
       access_code: artist.access_code,
-      portal_url: link,
+      portal_url: deep,
       message:
         action === "reset"
-          ? "Nouveau code généré — tu peux le renvoyer."
-          : "Code d'accès créé.",
+          ? "Nouveau code + QR générés — tu peux les montrer ou les renvoyer."
+          : "Code + QR d'accès créés. L’artiste peut flasher sur place.",
     });
   }
 
@@ -52,7 +55,8 @@ export async function POST(
     artist.access_code_updated_at = nowIso();
   }
 
-  const msg = accessMessage(artist.stage_name, artist.access_code, link);
+  const deep = artistPortalDeepLink(origin, artist.access_code);
+  const msg = accessMessage(artist.stage_name, artist.access_code, deep);
 
   if (action === "send_sms") {
     if (!artist.phone) {
@@ -68,7 +72,7 @@ export async function POST(
         ok: true,
         simulated: result.simulated,
         access_code: artist.access_code,
-        portal_url: link,
+        portal_url: deep,
         message: result.simulated
           ? "SMS simulé (pas de clé Brevo)."
           : "SMS envoyé ✅",
@@ -93,9 +97,9 @@ export async function POST(
         <div style="font-family:sans-serif;line-height:1.5;color:#111">
           <h2>Biiip Comedy Club — ta fiche artiste</h2>
           <p>Salut <strong>${artist.stage_name}</strong>,</p>
-          <p>Voici ton accès pour compléter ta fiche :</p>
-          <p style="font-size:22px;letter-spacing:2px"><strong>${artist.access_code}</strong></p>
-          <p><a href="${link}">${link}</a></p>
+          <p>Complète ta fiche en un clic (ou flash le QR qu’on t’a montré) :</p>
+          <p><a href="${deep}" style="display:inline-block;background:#19b2ea;color:#04131f;text-decoration:none;font-weight:700;padding:12px 18px;border-radius:10px">Ouvrir ma fiche</a></p>
+          <p>Code de secours : <strong style="letter-spacing:2px">${artist.access_code}</strong></p>
           <p>À très bientôt sur scène.</p>
         </div>`;
       const result = await sendDocumentEmail(
@@ -114,7 +118,7 @@ export async function POST(
         ok: true,
         simulated: result.simulated,
         access_code: artist.access_code,
-        portal_url: link,
+        portal_url: deep,
         message: result.simulated
           ? "Email simulé (pas de clé Brevo)."
           : "Email envoyé ✅",

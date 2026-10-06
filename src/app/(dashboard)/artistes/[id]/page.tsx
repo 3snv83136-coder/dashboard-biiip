@@ -1,5 +1,6 @@
 "use client";
 
+import { ArtistAccessQr } from "@/components/artists/ArtistAccessQr";
 import { Button } from "@/components/ui/Button";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { ARTIST_LEVEL_LABELS, DOC_TYPE_LABELS } from "@/lib/constants";
@@ -8,7 +9,7 @@ import { Copy, KeyRound, Mail, MessageSquare, Pencil, Trash2 } from "lucide-reac
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 type EditForm = {
   stage_name: string;
@@ -77,8 +78,20 @@ export default function ArtisteDetailPage() {
 
   useEffect(() => {
     void load();
-    setPortalUrl(`${window.location.origin}/ma-fiche`);
   }, [load]);
+
+  const deepLink = useMemo(() => {
+    if (typeof window === "undefined" || !artist?.access_code) return "";
+    return `${window.location.origin}/ma-fiche?code=${encodeURIComponent(artist.access_code)}`;
+  }, [artist?.access_code]);
+
+  // keep portalUrl in sync for share / display
+  useEffect(() => {
+    if (deepLink) setPortalUrl(deepLink);
+    else if (typeof window !== "undefined") {
+      setPortalUrl(`${window.location.origin}/ma-fiche`);
+    }
+  }, [deepLink]);
 
   async function accessAction(action: string) {
     setBusy(true);
@@ -356,12 +369,18 @@ export default function ArtisteDetailPage() {
       <div className="panel space-y-4 p-5">
         <div>
           <h3 className="font-display text-lg font-semibold">
-            Accès fiche artiste
+            Accès fiche artiste — QR
           </h3>
           <p className="mt-1 text-sm text-muted">
-            Lien à envoyer à la main (WhatsApp…) ou via SMS / email depuis ici.
+            Première venue : crée le QR, montre-le sur place. L’artiste flash et
+            remplit sa fiche. Le code à 4 chiffres reste en secours.
           </p>
         </div>
+
+        <ArtistAccessQr
+          stageName={artist.stage_name}
+          portalUrlWithCode={artist.access_code ? deepLink || portalUrl : ""}
+        />
 
         <div className="rounded-xl bg-black/25 p-3 text-sm">
           <p>
@@ -390,14 +409,14 @@ export default function ArtisteDetailPage() {
             disabled={busy}
           >
             <KeyRound size={16} />
-            {artist.access_code ? "Nouveau" : "Créer le code"}
+            {artist.access_code ? "Nouveau QR / code" : "Créer le QR"}
           </Button>
           <Button
             variant="secondary"
             disabled={!shareText}
             onClick={() => void copyText(shareText)}
           >
-            <Copy size={16} /> Copier
+            <Copy size={16} /> Copier lien + code
           </Button>
           <Button
             variant="ghost"
