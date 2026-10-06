@@ -39,6 +39,7 @@ const emptyForm = {
   capacity: 19,
   billetweb_url: "",
   internal_notes: "",
+  is_avant_premiere: false,
   artist_ids: [] as string[],
 };
 
@@ -325,6 +326,18 @@ export default function CalendrierPage() {
                 </div>
               </div>
               <div>
+                <label className="flex items-center gap-2 rounded-xl border border-white/10 px-3 py-2.5 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={form.is_avant_premiere}
+                    onChange={(e) =>
+                      setForm({ ...form, is_avant_premiere: e.target.checked })
+                    }
+                  />
+                  Avant-première (ciblage adhérents ≥ 3 passages)
+                </label>
+              </div>
+              <div>
                 <label className="label-field">Lien Billetweb</label>
                 <input
                   className="input-field"
@@ -416,6 +429,24 @@ export default function CalendrierPage() {
               <span className="text-cyan">Confirmé</span> ou{" "}
               <span className="text-cyan">Payé</span>.
             </p>
+            <label className="mt-3 flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={Boolean(selected.is_avant_premiere)}
+                onChange={(e) => {
+                  const is_avant_premiere = e.target.checked;
+                  void fetch(`/api/shows/${selected._id}`, {
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ is_avant_premiere }),
+                  }).then(async () => {
+                    await load();
+                    setSelected({ ...selected, is_avant_premiere });
+                  });
+                }}
+              />
+              Avant-première
+            </label>
             <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
               <Button
                 variant="danger"

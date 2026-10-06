@@ -55,7 +55,8 @@ export default function ReservationsPage() {
           !needle ||
           r.full_name.toLowerCase().includes(needle) ||
           r.email.includes(needle) ||
-          r.ticket_code.toLowerCase().includes(needle)
+          r.ticket_code.toLowerCase().includes(needle) ||
+          (r.member_number || "").toLowerCase().includes(needle)
       );
   }, [reservations, showId, q]);
 
@@ -131,7 +132,7 @@ export default function ReservationsPage() {
             </div>
             <div className="relative">
               <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
-              <input className="input-field" style={{ paddingLeft: 36 }} placeholder="Nom, email ou code billet" value={q} onChange={(e) => setQ(e.target.value)} />
+              <input className="input-field" style={{ paddingLeft: 36 }} placeholder="Nom, email, n° adhérent ou code" value={q} onChange={(e) => setQ(e.target.value)} />
             </div>
           </div>
           {error ? <p className="mt-3 text-sm text-red-300">{error}</p> : null}
@@ -142,6 +143,7 @@ export default function ReservationsPage() {
                 <thead className="border-b border-white/10 text-xs uppercase text-muted">
                   <tr>
                     <th className="px-3 py-2">Nom</th>
+                    <th className="px-3 py-2">N° adhérent</th>
                     <th className="px-3 py-2">Email</th>
                     <th className="px-3 py-2">Places</th>
                     <th className="px-3 py-2">Code</th>
@@ -154,7 +156,12 @@ export default function ReservationsPage() {
                     <tr key={r._id} className="border-b border-white/5">
                       <td className="px-3 py-2 font-medium">
                         {r.full_name}
-                        {r.has_requested_membership ? <span className="ml-2 text-xs text-cyan">adhérent</span> : null}
+                        {r.member_id || r.has_requested_membership ? (
+                          <span className="ml-2 text-xs text-cyan">adhérent</span>
+                        ) : null}
+                      </td>
+                      <td className="px-3 py-2 font-mono text-xs text-cyan">
+                        {r.member_number || "—"}
                       </td>
                       <td className="px-3 py-2 text-muted">{r.email}</td>
                       <td className="px-3 py-2">{r.seats_count}</td>

@@ -60,6 +60,10 @@ export interface Show {
   booking_status: BookingStatus;
   capacity: number;
   billetweb_url: string;
+  /** Absent = ouvert ; `false` = masqué de /spectacles. */
+  is_public_booking?: boolean;
+  /** Soirée avant-première (ciblage adhérents fidèles). */
+  is_avant_premiere?: boolean;
   internal_notes: string;
   created_by: string;
   created_at: string;
@@ -254,6 +258,8 @@ export interface SeatReservation {
   accepted_terms_at: string;
   has_requested_membership: boolean;
   member_id: string | null;
+  /** N° public dénormalisé (saisie résa ou lookup). */
+  member_number?: string | null;
   created_at: string;
   updated_at: string;
 }

@@ -2,10 +2,13 @@ import { sendReservationEmail, sendWelcomeEmail } from "@/lib/club-emails";
 import { publicOrigin } from "@/lib/club-format";
 import {
   clientIp,
+  findMemberByEmail,
+  findMemberByNumber,
   getShow,
   isValidEmail,
   joinAsMember,
   normalizeEmail,
+  normalizeMemberNumber,
   rateLimited,
   reserveSeats,
 } from "@/lib/public-store";
@@ -38,6 +41,7 @@ export async function POST(req: Request) {
   const full_name = String(body.full_name || "").trim();
   const email = normalizeEmail(String(body.email || ""));
   const seats_count = Math.floor(Number(body.seats_count));
+  const rawMemberNumber = String(body.member_number || "").trim();
 
   if (!full_name || full_name.length > 120) {
     return NextResponse.json({ error: "Indique ton nom." }, { status: 400 });
@@ -58,8 +62,36 @@ export async function POST(req: Request) {
   try {
     const origin = publicOrigin(req);
     let member_id: string | null = null;
+    let member_number: string | null = null;
     const wantsMembership = body.join_club === true;
-    if (wantsMembership) {
+
+    // 1) N° adhérent saisi (fortement recommandé)
+    if (rawMemberNumber) {
+      const byNum = await findMemberByNumber(rawMemberNumber);
+      if (!byNum) {
+        return NextResponse.json(
+          {
+            error:
+              "Ce numéro d’adhérent est introuvable. Vérifie-le sur ta carte (BIIIP-000123) ou laisse le champ vide.",
+          },
+          { status: 400 }
+        );
+      }
+      member_id = byNum._id;
+      member_number = byNum.member_number || normalizeMemberNumber(rawMemberNumber);
+    }
+
+    // 2) Lookup auto par email si déjà adhérent
+    if (!member_id) {
+      const byEmail = await findMemberByEmail(email);
+      if (byEmail) {
+        member_id = byEmail._id;
+        member_number = byEmail.member_number || null;
+      }
+    }
+
+    // 3) Nouvelle adhésion via case « J’adhère »
+    if (wantsMembership && !member_id) {
       const parts = full_name.split(/\s+/).filter(Boolean);
       const first_name = parts[0] || full_name;
       const last_name = parts.slice(1).join(" ") || first_name;
@@ -71,7 +103,10 @@ export async function POST(req: Request) {
         signup_source: "reservation",
       });
       member_id = member._id;
-      if (is_new) await sendWelcomeEmail(member, `${origin}/adhesion/carte/${member._id}`);
+      member_number = member.member_number || null;
+      if (is_new) {
+        await sendWelcomeEmail(member, `${origin}/adhesion/carte/${member._id}`);
+      }
     }
 
     const result = await reserveSeats({
@@ -79,8 +114,9 @@ export async function POST(req: Request) {
       full_name,
       email,
       seats_count,
-      has_requested_membership: wantsMembership,
+      has_requested_membership: wantsMembership || Boolean(member_id),
       member_id,
+      member_number,
     });
 
     if (!result.ok) {
@@ -98,7 +134,12 @@ export async function POST(req: Request) {
       const show = await getShow(show_id);
       if (show) await sendReservationEmail(result.reservation, show, `${origin}${ticket_path}`);
     }
-    return NextResponse.json({ ok: true, is_new: result.is_new, ticket_path });
+    return NextResponse.json({
+      ok: true,
+      is_new: result.is_new,
+      ticket_path,
+      member_number,
+    });
   } catch (err) {
     console.error("[public/reservations]", err);
     return NextResponse.json(

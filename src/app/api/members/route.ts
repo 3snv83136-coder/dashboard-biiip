@@ -1,12 +1,13 @@
 import { requireSession } from "@/lib/api-auth";
+import { AVANT_PREMIERE_MIN_VISITS } from "@/lib/constants";
 import {
   DEFAULT_MEMBERSHIP_FEE_AMOUNT,
   MEMBERSHIP_TERMS_VERSION,
 } from "@/lib/membership-terms";
 import { createId, nowIso } from "@/lib/ids";
+import { getVisitsCountMap, nextMemberNumber } from "@/lib/public-store";
 import { loadStore, saveStore } from "@/lib/store";
 import type { MembershipStatus } from "@/lib/types";
-import { nextMemberNumber } from "@/lib/public-store";
 import { NextResponse } from "next/server";
 
 export async function GET(req: Request) {
@@ -16,6 +17,7 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const q = (searchParams.get("q") || "").toLowerCase();
   const status = searchParams.get("status") || "";
+  const eligible = searchParams.get("eligible_avant_premiere") === "1";
 
   const store = await loadStore();
   let members = store.members ?? [];
@@ -26,17 +28,33 @@ export async function GET(req: Request) {
         m.email.toLowerCase().includes(q) ||
         m.phone.includes(q) ||
         m.city.toLowerCase().includes(q) ||
-        m.address_line.toLowerCase().includes(q)
+        m.address_line.toLowerCase().includes(q) ||
+        (m.member_number || "").toLowerCase().includes(q)
     );
   }
   if (status) {
     members = members.filter((m) => m.membership_status === status);
   }
 
+  const visits = await getVisitsCountMap(members.map((m) => m._id));
+  let rows = members
+    .map((m) => ({
+      ...m,
+      visits_count: visits[m._id] ?? 0,
+      is_avant_premiere_eligible:
+        (visits[m._id] ?? 0) >= AVANT_PREMIERE_MIN_VISITS,
+    }))
+    .sort((a, b) => a.full_name.localeCompare(b.full_name));
+
+  if (eligible) {
+    rows = rows.filter((m) => m.is_avant_premiere_eligible);
+  }
+
   return NextResponse.json({
-    members: members.sort((a, b) => a.full_name.localeCompare(b.full_name)),
+    members: rows,
     terms_version: MEMBERSHIP_TERMS_VERSION,
     default_fee_amount: DEFAULT_MEMBERSHIP_FEE_AMOUNT,
+    avant_premiere_min_visits: AVANT_PREMIERE_MIN_VISITS,
   });
 }
 

@@ -47,6 +47,7 @@ export async function POST(req: Request) {
     booking_status: (body.booking_status || "pressenti") as BookingStatus,
     capacity: Number(body.capacity ?? 19),
     billetweb_url: String(body.billetweb_url || ""),
+    is_avant_premiere: body.is_avant_premiere === true,
     internal_notes: String(body.internal_notes || ""),
     created_by: session.user.id,
     created_at: ts,

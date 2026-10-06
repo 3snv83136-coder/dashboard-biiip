@@ -15,6 +15,7 @@ import {
   Star,
   Ticket,
   Users,
+  Wallet,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -33,6 +34,7 @@ const ICONS = {
   radio: Radio,
   key: KeyRound,
   ticket: Ticket,
+  cash: Wallet,
 } as const;
 
 export function HomeTiles() {
@@ -59,13 +61,12 @@ export function HomeTiles() {
         }}
       >
         {items.map((item) => {
-          const Icon = ICONS[item.icon];
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="group relative isolate flex h-full min-h-[140px] flex-col overflow-hidden rounded-2xl outline-none transition duration-300 hover:scale-[1.015] hover:shadow-lg focus-visible:ring-2 focus-visible:ring-cyan active:scale-[0.985] xs:min-h-[150px] sm:min-h-[160px] md:min-h-[175px] lg:min-h-[190px]"
-            >
+          const Icon = ICONS[item.icon as keyof typeof ICONS] ?? Home;
+          const external = "external" in item && item.external;
+          const className =
+            "group relative isolate flex h-full min-h-[140px] flex-col overflow-hidden rounded-2xl outline-none transition duration-300 hover:scale-[1.015] hover:shadow-lg focus-visible:ring-2 focus-visible:ring-cyan active:scale-[0.985] xs:min-h-[150px] sm:min-h-[160px] md:min-h-[175px] lg:min-h-[190px]";
+          const body = (
+            <>
               <Image
                 src={item.image}
                 alt={item.label}
@@ -93,8 +94,31 @@ export function HomeTiles() {
                 </span>
                 <p className="max-w-[95%] break-words font-display text-[clamp(0.95rem,2.8vw,1.25rem)] font-bold leading-snug text-white drop-shadow-md">
                   {item.label}
+                  {external ? (
+                    <span className="mt-1 block text-xs font-medium opacity-80">
+                      Ouvre l’app caisse ↗
+                    </span>
+                  ) : null}
                 </p>
               </div>
+            </>
+          );
+          if (external) {
+            return (
+              <a
+                key={item.href}
+                href={item.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={className}
+              >
+                {body}
+              </a>
+            );
+          }
+          return (
+            <Link key={item.href} href={item.href} className={className}>
+              {body}
             </Link>
           );
         })}

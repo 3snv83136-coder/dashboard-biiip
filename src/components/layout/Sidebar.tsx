@@ -17,6 +17,7 @@ import {
   Star,
   Ticket,
   Users,
+  Wallet,
   X,
 } from "lucide-react";
 import Link from "next/link";
@@ -36,6 +37,7 @@ const ICONS = {
   radio: Radio,
   key: KeyRound,
   ticket: Ticket,
+  cash: Wallet,
 } as const;
 
 export function Sidebar({
@@ -83,21 +85,19 @@ export function Sidebar({
 
         <nav className="flex flex-1 flex-col gap-1 overflow-y-auto overscroll-contain">
           {items.map((item) => {
-            const Icon = ICONS[item.icon];
+            const Icon = ICONS[item.icon as keyof typeof ICONS] ?? Home;
+            const external = "external" in item && item.external;
             const active =
-              pathname === item.href || pathname.startsWith(`${item.href}/`);
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={onClose}
-                className={cn(
-                  "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition",
-                  active
-                    ? "bg-neon/20 text-white shadow-neon"
-                    : "text-muted hover:bg-white/5 hover:text-white"
-                )}
-              >
+              !external &&
+              (pathname === item.href || pathname.startsWith(`${item.href}/`));
+            const className = cn(
+              "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition",
+              active
+                ? "bg-neon/20 text-white shadow-neon"
+                : "text-muted hover:bg-white/5 hover:text-white"
+            );
+            const content = (
+              <>
                 <span
                   className="h-2.5 w-2.5 shrink-0 rounded-sm"
                   style={{ backgroundColor: item.color }}
@@ -105,6 +105,30 @@ export function Sidebar({
                 />
                 <Icon size={18} />
                 {item.label}
+              </>
+            );
+            if (external) {
+              return (
+                <a
+                  key={item.href}
+                  href={item.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={onClose}
+                  className={className}
+                >
+                  {content}
+                </a>
+              );
+            }
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={onClose}
+                className={className}
+              >
+                {content}
               </Link>
             );
           })}

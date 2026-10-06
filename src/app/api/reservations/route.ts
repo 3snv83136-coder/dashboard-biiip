@@ -19,10 +19,34 @@ export async function GET(req: Request) {
   if (searchParams.get("format") === "csv") {
     const showsById = new Map(store.shows.map((s) => [s._id, s]));
     const esc = (v: unknown) => `"${String(v ?? "").replace(/"/g, '""')}"`;
-    const header = ["show_title", "show_date", "full_name", "email", "seats_count", "reservation_status", "ticket_code", "has_requested_membership", "created_at"];
+    const header = [
+      "show_title",
+      "show_date",
+      "full_name",
+      "email",
+      "member_number",
+      "seats_count",
+      "reservation_status",
+      "ticket_code",
+      "has_requested_membership",
+      "created_at",
+    ];
     const lines = reservations.map((r) => {
       const s = showsById.get(r.show_id);
-      return [s?.title, s?.show_date, r.full_name, r.email, r.seats_count, r.reservation_status, r.ticket_code, r.has_requested_membership, r.created_at].map(esc).join(";");
+      return [
+        s?.title,
+        s?.show_date,
+        r.full_name,
+        r.email,
+        r.member_number || "",
+        r.seats_count,
+        r.reservation_status,
+        r.ticket_code,
+        r.has_requested_membership,
+        r.created_at,
+      ]
+        .map(esc)
+        .join(";");
     });
     return new NextResponse("﻿" + [header.join(";"), ...lines].join("\n"), {
       headers: {

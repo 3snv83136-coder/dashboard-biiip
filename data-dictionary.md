@@ -68,6 +68,8 @@ Le cœur du calendrier de booking (6–12 mois).
 | `booking_status` | enum | `pressenti` \| `confirme` \| `paye` |
 | `capacity` | number | Jauge (défaut `19`) |
 | `billetweb_url` | string | Lien billetterie externe |
+| `is_public_booking` | bool | Défaut absent = ouvert ; `false` pour masquer de `/spectacles` |
+| `is_avant_premiere` | bool | Soirée avant-première (éligible aux adhérents ≥ 3 passages) |
 | `internal_notes` | string | Notes staff |
 | `created_by` | objectId | Réf. `users._id` |
 | `created_at` | date | Création |
@@ -244,9 +246,12 @@ Réservations **gratuites** de places par les spectateurs (≠ `show_bookings`, 
 | `ticket_code` | string | Code billet (12 caractères hexadécimaux), encodé dans le QR du billet |
 | `accepted_terms_at` | date | Acceptation du traitement des données |
 | `has_requested_membership` | bool | A coché « J’adhère » en réservant |
-| `member_id` | string \| null | Réf. `members._id` si adhésion |
+| `member_id` | string \| null | Réf. `members._id` si adhérent rattaché |
+| `member_number` | string \| null | N° public `BIIIP-000123` (dénormalisé, saisie ou lookup) |
 | `created_at` | date | Création |
 | `updated_at` | date | Mise à jour |
+
+**Règle passages** : 1 passage = 1 réservation passée en `presente` (pointage entrée). Seuil avant-première : **3** passages.
 
 ## Collection `show_seat_counters`
 Compteur atomique de places prises par show (évite le surbooking).
@@ -264,7 +269,7 @@ Compteurs séquentiels.
 | `_id` | string | Nom du compteur (`member_number`) |
 | `seq` | number | Dernière valeur attribuée |
 
-Champ optionnel ajouté à `shows` : `is_public_booking` (bool, défaut absent = ouvert) — mettre `false` pour masquer un show confirmé de la page publique.
+Champ optionnel ajouté à `shows` : `is_public_booking` (bool, défaut absent = ouvert) — mettre `false` pour masquer un show confirmé de la page publique. Voir aussi `is_avant_premiere`.
 
 ---
 

@@ -24,6 +24,12 @@ export const BIIIP_REVIEW_TITLE_EN = "The Biiip Review";
 export const BIIIP_REVIEW_TITLE_FR = "L'avis du Biiip";
 export const PUBLIC_SITE_BASE = "https://biiipcomedyclub.fr";
 
+/** Caisse boissons (app séparée — pas de compta dans le dashboard). */
+export const CAISSE_URL = "https://caisse-biiip.vercel.app/";
+
+/** Seuil de passages (statut `presente`) pour les avant-premières. */
+export const AVANT_PREMIERE_MIN_VISITS = 3;
+
 /** Lieu réel du club (FAQ / E-E-A-T — ne pas inventer d’autre adresse). */
 export const VENUE_NAME = "Biiip Comedy Club";
 export const VENUE_ADDRESS_LINE = "1 rue de l'Humilité";
@@ -182,6 +188,15 @@ export const STAFF_NAV = [
     color: "#19b2ea",
     image:
       "https://images.unsplash.com/photo-1503095396549-807759245b35?w=800&q=80",
+  },
+  {
+    href: "https://caisse-biiip.vercel.app/",
+    label: "Caisse",
+    icon: "cash",
+    color: "#fbbf24",
+    image:
+      "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&q=80",
+    external: true,
   },
   {
     href: "/avis",

@@ -30,6 +30,12 @@ export async function PATCH(
   if (body.billetweb_url !== undefined) {
     show.billetweb_url = String(body.billetweb_url);
   }
+  if (body.is_avant_premiere !== undefined) {
+    show.is_avant_premiere = Boolean(body.is_avant_premiere);
+  }
+  if (body.is_public_booking !== undefined) {
+    show.is_public_booking = Boolean(body.is_public_booking);
+  }
   if (body.internal_notes !== undefined) {
     show.internal_notes = String(body.internal_notes);
   }

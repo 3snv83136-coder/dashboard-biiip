@@ -85,6 +85,32 @@ export async function findMemberByEmail(email: string): Promise<Member | null> {
   return (doc as Member | null) ?? null;
 }
 
+/** Normalise `BIIIP-000123` / `000123` / `biiip 123`. */
+export function normalizeMemberNumber(raw: string): string {
+  const digits = raw.replace(/\D/g, "");
+  if (!digits) return "";
+  return `BIIIP-${digits.padStart(6, "0").slice(-6)}`;
+}
+
+export async function findMemberByNumber(
+  member_number: string
+): Promise<Member | null> {
+  const num = normalizeMemberNumber(member_number);
+  if (!num) return null;
+  if (!isMongoEnabled()) {
+    return (
+      getStore().members.find(
+        (m) =>
+          m.member_number &&
+          normalizeMemberNumber(m.member_number) === num
+      ) ?? null
+    );
+  }
+  await connectMongo();
+  const doc = await MemberModel.findOne({ member_number: num }).lean();
+  return (doc as Member | null) ?? null;
+}
+
 export async function findMemberById(id: string): Promise<Member | null> {
   if (!isMongoEnabled()) {
     return getStore().members.find((m) => m._id === id) ?? null;
@@ -315,6 +341,7 @@ export async function reserveSeats(input: {
   seats_count: number;
   has_requested_membership: boolean;
   member_id: string | null;
+  member_number?: string | null;
 }): Promise<ReserveResult> {
   const show = await getShow(input.show_id);
   if (!show) return { ok: false, reason: "not_found" };
@@ -340,6 +367,7 @@ export async function reserveSeats(input: {
     accepted_terms_at: ts,
     has_requested_membership: input.has_requested_membership,
     member_id: input.member_id,
+    member_number: input.member_number || null,
     created_at: ts,
     updated_at: ts,
   };
@@ -356,6 +384,74 @@ export async function reserveSeats(input: {
     throw err;
   }
   return { ok: true, reservation, is_new: true };
+}
+
+/** Passages = réservations en statut `presente` pour cet adhérent. */
+export async function countMemberVisits(member_id: string): Promise<number> {
+  if (!member_id) return 0;
+  if (!isMongoEnabled()) {
+    return mem().reservations.filter(
+      (r) => r.member_id === member_id && r.reservation_status === "presente"
+    ).length;
+  }
+  await connectMongo();
+  return SeatReservationModel.countDocuments({
+    member_id,
+    reservation_status: "presente",
+  });
+}
+
+export async function listReservationsForMember(
+  member_id: string
+): Promise<SeatReservation[]> {
+  if (!member_id) return [];
+  if (!isMongoEnabled()) {
+    return mem()
+      .reservations.filter((r) => r.member_id === member_id)
+      .sort((a, b) => b.created_at.localeCompare(a.created_at));
+  }
+  await connectMongo();
+  return (await SeatReservationModel.find({ member_id })
+    .sort({ created_at: -1 })
+    .lean()) as SeatReservation[];
+}
+
+/** Map member_id → nombre de passages (`presente`). */
+export async function getVisitsCountMap(
+  memberIds: string[]
+): Promise<Record<string, number>> {
+  const ids = Array.from(new Set(memberIds.filter(Boolean)));
+  const out: Record<string, number> = {};
+  for (const id of ids) out[id] = 0;
+  if (!ids.length) return out;
+
+  if (!isMongoEnabled()) {
+    for (const r of mem().reservations) {
+      if (
+        r.member_id &&
+        out[r.member_id] !== undefined &&
+        r.reservation_status === "presente"
+      ) {
+        out[r.member_id] += 1;
+      }
+    }
+    return out;
+  }
+
+  await connectMongo();
+  const rows = await SeatReservationModel.aggregate([
+    {
+      $match: {
+        member_id: { $in: ids },
+        reservation_status: "presente",
+      },
+    },
+    { $group: { _id: "$member_id", n: { $sum: 1 } } },
+  ]);
+  for (const row of rows as { _id: string; n: number }[]) {
+    out[row._id] = row.n;
+  }
+  return out;
 }
 
 /* ---------- côté staff ---------- */

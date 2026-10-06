@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { AdhesionQrPanel } from "@/components/members/AdhesionQrPanel";
 import {
+  AVANT_PREMIERE_MIN_VISITS,
   MEMBERSHIP_STATUS_COLORS,
   MEMBERSHIP_STATUS_LABELS,
 } from "@/lib/constants";
@@ -24,6 +25,11 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
+type MemberRow = Member & {
+  visits_count?: number;
+  is_avant_premiere_eligible?: boolean;
+};
+
 const emptyForm = () => ({
   full_name: "",
   email: "",
@@ -40,8 +46,9 @@ const emptyForm = () => ({
 });
 
 export default function AdherentsPage() {
-  const [members, setMembers] = useState<Member[]>([]);
+  const [members, setMembers] = useState<MemberRow[]>([]);
   const [q, setQ] = useState("");
+  const [onlyEligible, setOnlyEligible] = useState(false);
   const [open, setOpen] = useState(false);
   const [notifyOpen, setNotifyOpen] = useState(false);
   const [termsOpen, setTermsOpen] = useState(false);
@@ -53,15 +60,18 @@ export default function AdherentsPage() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
-  const load = useCallback(async (query = "") => {
-    const res = await fetch(`/api/members?q=${encodeURIComponent(query)}`);
+  const load = useCallback(async (query = "", eligible = onlyEligible) => {
+    const params = new URLSearchParams();
+    if (query) params.set("q", query);
+    if (eligible) params.set("eligible_avant_premiere", "1");
+    const res = await fetch(`/api/members?${params}`);
     const json = await res.json();
     setMembers(json.members ?? []);
-  }, []);
+  }, [onlyEligible]);
 
   useEffect(() => {
-    void load();
-  }, [load]);
+    void load(q, onlyEligible);
+  }, [load, onlyEligible]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function openCreate() {
     setEditingId(null);
@@ -245,6 +255,13 @@ export default function AdherentsPage() {
         </div>
         <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap">
           <Button
+            variant={onlyEligible ? "secondary" : "ghost"}
+            className="w-full sm:w-auto"
+            onClick={() => setOnlyEligible((v) => !v)}
+          >
+            Avant-première (≥{AVANT_PREMIERE_MIN_VISITS})
+          </Button>
+          <Button
             variant="secondary"
             className="w-full sm:w-auto"
             onClick={() => load(q)}
@@ -298,6 +315,7 @@ export default function AdherentsPage() {
             <thead className="border-b border-white/10 text-xs uppercase text-muted">
               <tr>
                 <th className="px-4 py-3">Nom</th>
+                <th className="px-4 py-3">Passages</th>
                 <th className="px-4 py-3">Coordonnées</th>
                 <th className="px-4 py-3">Adresse</th>
                 <th className="px-4 py-3">Cotisation</th>
@@ -316,6 +334,22 @@ export default function AdherentsPage() {
                     {m.signup_source && m.signup_source !== "dashboard" ? (
                       <span className="block text-xs text-muted">via {m.signup_source}</span>
                     ) : null}
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className="font-semibold text-white">
+                      {m.visits_count ?? 0}
+                    </span>
+                    {m.is_avant_premiere_eligible ? (
+                      <span className="mt-1 block text-xs text-cyan">
+                        Éligible avant-première
+                      </span>
+                    ) : (
+                      <span className="mt-1 block text-xs text-muted">
+                        {(m.visits_count ?? 0) < AVANT_PREMIERE_MIN_VISITS
+                          ? `${AVANT_PREMIERE_MIN_VISITS - (m.visits_count ?? 0)} avant éligibilité`
+                          : ""}
+                      </span>
+                    )}
                   </td>
                   <td className="px-4 py-3 text-muted">
                     {m.email}
