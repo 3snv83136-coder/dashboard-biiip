@@ -21,6 +21,8 @@ type EditForm = {
   default_fee_amount: string;
   instagram_handle: string;
   tiktok_handle: string;
+  address_line: string;
+  postal_code: string;
   city: string;
   technical_needs: string;
   dietary_notes: string;
@@ -39,6 +41,8 @@ function toForm(artist: Artist): EditForm {
     default_fee_amount: String(artist.default_fee_amount ?? 0),
     instagram_handle: artist.instagram_handle,
     tiktok_handle: artist.tiktok_handle,
+    address_line: artist.address_line ?? "",
+    postal_code: artist.postal_code ?? "",
     city: artist.city,
     technical_needs: artist.technical_needs,
     dietary_notes: artist.dietary_notes,
@@ -214,6 +218,8 @@ export default function ArtisteDetailPage() {
                 ["legal_name", "Nom civil"],
                 ["email", "Email"],
                 ["phone", "Téléphone"],
+                ["address_line", "Adresse"],
+                ["postal_code", "Code postal"],
                 ["city", "Ville"],
                 ["photo_url", "Photo (URL)"],
                 ["instagram_handle", "Instagram"],
@@ -323,7 +329,12 @@ export default function ArtisteDetailPage() {
             <div className="mt-4 grid gap-2 text-sm md:grid-cols-2">
               <p>Email · {artist.email || "—"}</p>
               <p>Tél · {artist.phone || "—"}</p>
-              <p>Ville · {artist.city || "—"}</p>
+              <p className="md:col-span-2">
+                Adresse ·{" "}
+                {[artist.address_line, [artist.postal_code, artist.city].filter(Boolean).join(" ")]
+                  .filter(Boolean)
+                  .join(", ") || "—"}
+              </p>
               <p>Instagram · {artist.instagram_handle || "—"}</p>
               <p>TikTok · {artist.tiktok_handle || "—"}</p>
               <p>Cachet · {artist.default_fee_amount} €</p>

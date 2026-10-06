@@ -52,6 +52,8 @@ export async function PATCH(
     "internal_notes",
     "technical_needs",
     "dietary_notes",
+    "address_line",
+    "postal_code",
     "city",
   ] as const;
 

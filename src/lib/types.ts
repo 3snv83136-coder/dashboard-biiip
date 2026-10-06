@@ -46,6 +46,8 @@ export interface Artist {
   access_profile_completed_at: string | null;
   technical_needs: string;
   dietary_notes: string;
+  address_line: string;
+  postal_code: string;
   city: string;
   created_at: string;
   updated_at: string;

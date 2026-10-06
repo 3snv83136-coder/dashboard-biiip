@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ARTIST_LEVEL_LABELS } from "@/lib/constants";
 import type { Artist, ArtistLevel } from "@/lib/types";
-import { ClipboardPaste, Plus, Search } from "lucide-react";
+import { ClipboardPaste, ImagePlus, Plus, Search } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -28,6 +28,7 @@ export default function ArtistesPage() {
   const [importOpen, setImportOpen] = useState(false);
   const [importText, setImportText] = useState("");
   const [importMessage, setImportMessage] = useState("");
+  const [ocrBusy, setOcrBusy] = useState(false);
   const [form, setForm] = useState(empty);
   const [saving, setSaving] = useState(false);
 
@@ -47,33 +48,34 @@ export default function ArtistesPage() {
       (a) =>
         a.stage_name.toLowerCase().includes(query) ||
         a.legal_name.toLowerCase().includes(query) ||
-        a.email.toLowerCase().includes(query)
+        a.email.toLowerCase().includes(query) ||
+        (a.city || "").toLowerCase().includes(query) ||
+        (a.address_line || "").toLowerCase().includes(query)
     );
   }, [artists, q]);
 
-  const previewCount = useMemo(
-    () =>
-      importText
-        .split(/\r?\n/)
-        .map((l) => l.trim())
-        .filter(Boolean).length,
-    [importText]
-  );
+  const previewCount = useMemo(() => {
+    const t = importText.trim();
+    if (!t) return 0;
+    if (t.includes("\n\n")) return t.split(/\n\s*\n+/).filter((b) => b.trim()).length;
+    return t.split(/\r?\n/).map((l) => l.trim()).filter(Boolean).length;
+  }, [importText]);
 
   async function createArtist() {
     setSaving(true);
-    await fetch("/api/artists", {
+    const res = await fetch("/api/artists", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(form),
     });
     setSaving(false);
+    if (!res.ok) return;
     setOpen(false);
     setForm(empty);
     await load();
   }
 
-  async function importWhatsApp() {
+  async function importContacts() {
     setSaving(true);
     setImportMessage("");
     const res = await fetch("/api/artists/import", {
@@ -90,8 +92,42 @@ export default function ArtistesPage() {
     setImportMessage(json.message);
     setImportText("");
     await load();
-    if ((json.created?.length ?? 0) > 0) {
-      setTimeout(() => setImportOpen(false), 900);
+    if ((json.created?.length ?? 0) + (json.updated?.length ?? 0) > 0) {
+      setTimeout(() => setImportOpen(false), 1200);
+    }
+  }
+
+  async function ocrFromFile(file: File) {
+    setOcrBusy(true);
+    setImportMessage("Lecture de la capture…");
+    try {
+      const Tesseract = await import("tesseract.js");
+      const { data } = await Tesseract.recognize(file, "fra+eng");
+      const text = (data.text || "").trim();
+      if (!text) {
+        setImportMessage("Aucun texte lu sur l’image. Réessaie avec une capture plus nette.");
+        return;
+      }
+      setImportText((prev) => (prev.trim() ? `${prev.trim()}\n\n${text}` : text));
+      setImportMessage("Texte extrait de la photo — vérifie puis importe.");
+    } catch (err) {
+      console.error("[ocr]", err);
+      setImportMessage("OCR impossible. Colle le texte à la main (Live Text iPhone → Copier).");
+    } finally {
+      setOcrBusy(false);
+    }
+  }
+
+  function onPasteImport(e: React.ClipboardEvent<HTMLTextAreaElement>) {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+    for (const item of Array.from(items)) {
+      if (item.type.startsWith("image/")) {
+        e.preventDefault();
+        const file = item.getAsFile();
+        if (file) void ocrFromFile(file);
+        return;
+      }
     }
   }
 
@@ -116,7 +152,7 @@ export default function ArtistesPage() {
             className="w-full sm:w-auto"
             onClick={() => setImportOpen(true)}
           >
-            <ClipboardPaste size={16} /> Import WhatsApp
+            <ClipboardPaste size={16} /> Coller SMS / photo
           </Button>
           <Button className="w-full sm:w-auto" onClick={() => setOpen(true)}>
             <Plus size={16} /> Ajouter un artiste
@@ -146,6 +182,11 @@ export default function ArtistesPage() {
               <p className="mt-3 line-clamp-2 text-sm text-muted">
                 {artist.bio || "Pas encore de bio."}
               </p>
+              <p className="mt-2 text-xs text-muted">
+                {[artist.address_line, [artist.postal_code, artist.city].filter(Boolean).join(" ")]
+                  .filter(Boolean)
+                  .join(" · ") || "Pas d’adresse"}
+              </p>
               <p className="mt-3 text-sm text-cyan">
                 Cachet habituel · {artist.default_fee_amount} €
               </p>
@@ -155,11 +196,11 @@ export default function ArtistesPage() {
       ) : (
         <EmptyState
           title="Aucun artiste dans le répertoire"
-          description="Ajoute un artiste, ou colle une liste WhatsApp."
+          description="Ajoute un artiste, ou colle un SMS / une capture d’écran."
         >
           <div className="flex flex-wrap justify-center gap-2">
             <Button variant="secondary" onClick={() => setImportOpen(true)}>
-              Import WhatsApp
+              Coller SMS / photo
             </Button>
             <Button onClick={() => setOpen(true)}>Ajouter un artiste</Button>
           </div>
@@ -168,26 +209,56 @@ export default function ArtistesPage() {
 
       {importOpen ? (
         <div className="modal-sheet">
-          <div className="modal-panel">
+          <div className="modal-panel max-w-xl">
             <h3 className="font-display text-lg font-semibold">
-              Import WhatsApp
+              Coller SMS / capture
             </h3>
             <p className="mt-2 text-sm text-muted">
-              Ouvre ton groupe → Infos → Participants, copie les noms, et colle
-              ici (un nom par ligne). Les doublons sont ignorés.
+              Colle du texte (SMS, WhatsApp) ou une <b>photo</b> (Ctrl/Cmd+V /
+              bouton ci-dessous). Sépare chaque artiste par une ligne vide.
+              Exemple :
             </p>
+            <pre className="mt-2 overflow-x-auto rounded-xl bg-black/30 p-3 text-xs text-muted">
+{`Léo Mirage
+06 01 02 03 04
+12 rue de l'Humilité
+83000 Toulon
+
+Sara Volt
+sara@mail.fr
+5 avenue de la République
+13001 Marseille`}
+            </pre>
             <div className="mt-4">
-              <label className="label-field">Liste collée</label>
+              <label className="label-field">Texte collé / OCR</label>
               <textarea
-                className="input-field min-h-[200px] font-mono text-xs"
+                className="input-field min-h-[220px] font-mono text-xs"
                 value={importText}
                 onChange={(e) => setImportText(e.target.value)}
-                placeholder={"Léo Mirage\nSara Volt\nMax Riff +33601020304"}
+                onPaste={onPasteImport}
+                placeholder="Colle ici… (tu peux aussi coller une image)"
               />
-              <p className="mt-1 text-xs text-muted">
-                {previewCount} ligne{previewCount > 1 ? "s" : ""} détectée
-                {previewCount > 1 ? "s" : ""}
-              </p>
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-white/10 px-3 py-2 text-sm hover:bg-white/5">
+                  <ImagePlus size={16} />
+                  {ocrBusy ? "Lecture…" : "Ajouter une photo"}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    disabled={ocrBusy}
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      if (f) void ocrFromFile(f);
+                      e.target.value = "";
+                    }}
+                  />
+                </label>
+                <p className="text-xs text-muted">
+                  {previewCount} fiche{previewCount > 1 ? "s" : ""} détectée
+                  {previewCount > 1 ? "s" : ""}
+                </p>
+              </div>
             </div>
             {importMessage ? (
               <p className="mt-3 text-sm text-success">{importMessage}</p>
@@ -203,10 +274,10 @@ export default function ArtistesPage() {
                 Fermer
               </Button>
               <Button
-                onClick={importWhatsApp}
-                disabled={saving || !importText.trim()}
+                onClick={() => void importContacts()}
+                disabled={saving || ocrBusy || !importText.trim()}
               >
-                {saving ? "Import…" : "Importer"}
+                {saving ? "Import…" : "Importer / mettre à jour"}
               </Button>
             </div>
           </div>
@@ -288,7 +359,7 @@ export default function ArtistesPage() {
                 Annuler
               </Button>
               <Button
-                onClick={createArtist}
+                onClick={() => void createArtist()}
                 disabled={saving || !form.stage_name}
               >
                 Enregistrer

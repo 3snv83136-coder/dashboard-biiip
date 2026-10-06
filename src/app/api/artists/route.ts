@@ -41,6 +41,8 @@ export async function POST(req: Request) {
     technical_needs: "",
     dietary_notes: "",
     city: String(body.city || ""),
+    address_line: String(body.address_line || ""),
+    postal_code: String(body.postal_code || ""),
     created_at: ts,
     updated_at: ts,
   };

@@ -49,6 +49,8 @@ Fiches artistes (répertoire + données de booking).
 | `access_profile_completed_at` | date \| null | 1re soumission complète du formulaire |
 | `technical_needs` | string | Besoins techniques (micro, lumières…) |
 | `dietary_notes` | string | Allergies / repas |
+| `address_line` | string | Adresse postale (voie) — import SMS / OCR |
+| `postal_code` | string | Code postal |
 | `city` | string | Ville de résidence / départ |
 | `created_at` | date | Création |
 | `updated_at` | date | Mise à jour |

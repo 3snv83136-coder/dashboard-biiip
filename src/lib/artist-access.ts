@@ -10,6 +10,8 @@ export function ensureArtistAccessFields(artist: Artist): Artist {
     access_profile_completed_at: artist.access_profile_completed_at ?? null,
     technical_needs: artist.technical_needs ?? "",
     dietary_notes: artist.dietary_notes ?? "",
+    address_line: artist.address_line ?? "",
+    postal_code: artist.postal_code ?? "",
     city: artist.city ?? "",
   };
 }
