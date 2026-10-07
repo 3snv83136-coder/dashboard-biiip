@@ -28,12 +28,49 @@ import {
   Search,
   Trash2,
 } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 type MemberRow = Member & {
   visits_count?: number;
   is_avant_premiere_eligible?: boolean;
 };
+
+type NotifyAudience =
+  | "all_consent"
+  | "avant_premiere"
+  | "never_visited"
+  | "has_visited";
+
+const NOTIFY_AUDIENCE_LABELS: Record<NotifyAudience, string> = {
+  all_consent: "Tous (consentement infos)",
+  avant_premiere: `Avant-première (≥${AVANT_PREMIERE_MIN_VISITS} passages)`,
+  never_visited: "Jamais venus (0 passage)",
+  has_visited: "Déjà venus (≥1 passage)",
+};
+
+function canReceiveInfo(m: MemberRow) {
+  return (
+    m.membership_status === "active" &&
+    Boolean(m.email?.trim()) &&
+    m.consent_communications
+  );
+}
+
+function filterNotifyAudience(pool: MemberRow[], audience: NotifyAudience) {
+  const base = pool.filter(canReceiveInfo);
+  if (audience === "avant_premiere") {
+    return base.filter(
+      (m) => (m.visits_count ?? 0) >= AVANT_PREMIERE_MIN_VISITS
+    );
+  }
+  if (audience === "never_visited") {
+    return base.filter((m) => (m.visits_count ?? 0) === 0);
+  }
+  if (audience === "has_visited") {
+    return base.filter((m) => (m.visits_count ?? 0) >= 1);
+  }
+  return base;
+}
 
 type VisitRow = {
   _id: string;
@@ -96,6 +133,11 @@ export default function AdherentsPage() {
   const [form, setForm] = useState(emptyForm);
   const [notifySubject, setNotifySubject] = useState("");
   const [notifyMessage, setNotifyMessage] = useState("");
+  const [notifyAudience, setNotifyAudience] =
+    useState<NotifyAudience>("all_consent");
+  const [notifyPool, setNotifyPool] = useState<MemberRow[]>([]);
+  const [notifySelected, setNotifySelected] = useState<string[]>([]);
+  const [notifyLoading, setNotifyLoading] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -254,7 +296,69 @@ export default function AdherentsPage() {
     }
   }
 
+  const notifyRecipients = useMemo(
+    () => filterNotifyAudience(notifyPool, notifyAudience),
+    [notifyPool, notifyAudience]
+  );
+
+  const notifySelectedMembers = useMemo(() => {
+    const set = new Set(notifySelected);
+    return notifyRecipients.filter((m) => set.has(m._id));
+  }, [notifyRecipients, notifySelected]);
+
+  async function openNotify() {
+    setNotifyOpen(true);
+    setError("");
+    setNotifySubject("");
+    setNotifyMessage("");
+    setNotifyAudience("all_consent");
+    setNotifySelected([]);
+    setNotifyLoading(true);
+    try {
+      const res = await fetch("/api/members?status=active");
+      const json = await res.json();
+      const pool = (json.members ?? []) as MemberRow[];
+      setNotifyPool(pool);
+      setNotifySelected(filterNotifyAudience(pool, "all_consent").map((m) => m._id));
+    } catch {
+      setError("Impossible de charger les destinataires");
+      setNotifyPool([]);
+    } finally {
+      setNotifyLoading(false);
+    }
+  }
+
+  function applyNotifyAudience(audience: NotifyAudience) {
+    setNotifyAudience(audience);
+    setNotifySelected(filterNotifyAudience(notifyPool, audience).map((m) => m._id));
+  }
+
+  function toggleNotifyMember(id: string) {
+    setNotifySelected((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  }
+
+  function selectAllNotify() {
+    setNotifySelected(notifyRecipients.map((m) => m._id));
+  }
+
+  function clearNotifySelection() {
+    setNotifySelected([]);
+  }
+
   async function sendNotify() {
+    if (!notifySelected.length) {
+      setError("Sélectionne au moins un destinataire");
+      return;
+    }
+    const ok = window.confirm(
+      `Envoyer cet email à ${notifySelected.length} adhérent${
+        notifySelected.length > 1 ? "s" : ""
+      } ?`
+    );
+    if (!ok) return;
+
     setBusy(true);
     setError("");
     setMessage("");
@@ -266,6 +370,8 @@ export default function AdherentsPage() {
           subject: notifySubject,
           message: notifyMessage,
           only_consent: true,
+          audience: notifyAudience,
+          member_ids: notifySelected,
         }),
       });
       const json = await res.json();
@@ -275,6 +381,7 @@ export default function AdherentsPage() {
       setNotifyOpen(false);
       setNotifySubject("");
       setNotifyMessage("");
+      setNotifySelected([]);
       setMessage(String(json.message || "Envoyé ✅"));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erreur");
@@ -338,7 +445,7 @@ export default function AdherentsPage() {
           <Button
             variant="secondary"
             className="w-full sm:w-auto"
-            onClick={() => setNotifyOpen(true)}
+            onClick={() => void openNotify()}
           >
             <Mail size={16} /> Envoyer une info
           </Button>
@@ -845,14 +952,116 @@ export default function AdherentsPage() {
 
       {notifyOpen ? (
         <div className="modal-sheet">
-          <div className="modal-panel">
+          <div className="modal-panel max-h-[90vh] max-w-lg overflow-y-auto">
             <h3 className="font-display text-lg font-semibold">
               Envoyer une info aux adhérents
             </h3>
             <p className="mt-1 text-sm text-muted">
-              Email aux membres actifs ayant consenti aux communications.
+              Filtre l’audience, coche qui reçoit, puis envoie. Uniquement les
+              actifs avec email + consentement infos.
             </p>
             <div className="mt-4 grid gap-3">
+              <div>
+                <label className="label-field">Destinataires</label>
+                <select
+                  className="input-field"
+                  value={notifyAudience}
+                  onChange={(e) =>
+                    applyNotifyAudience(e.target.value as NotifyAudience)
+                  }
+                  disabled={notifyLoading}
+                >
+                  {(Object.keys(NOTIFY_AUDIENCE_LABELS) as NotifyAudience[]).map(
+                    (key) => (
+                      <option key={key} value={key}>
+                        {NOTIFY_AUDIENCE_LABELS[key]}
+                        {notifyPool.length
+                          ? ` — ${filterNotifyAudience(notifyPool, key).length}`
+                          : ""}
+                      </option>
+                    )
+                  )}
+                </select>
+              </div>
+
+              <div className="rounded-xl border border-white/10 bg-black/20 p-3">
+                <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                  <p className="text-sm text-muted">
+                    {notifyLoading
+                      ? "Chargement…"
+                      : `${notifySelected.length} sélectionné${
+                          notifySelected.length > 1 ? "s" : ""
+                        } / ${notifyRecipients.length} dans le filtre`}
+                  </p>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      className="text-xs text-cyan underline"
+                      onClick={selectAllNotify}
+                      disabled={notifyLoading || !notifyRecipients.length}
+                    >
+                      Tout cocher
+                    </button>
+                    <button
+                      type="button"
+                      className="text-xs text-muted underline"
+                      onClick={clearNotifySelection}
+                      disabled={notifyLoading || !notifySelected.length}
+                    >
+                      Tout décocher
+                    </button>
+                  </div>
+                </div>
+                <ul className="max-h-48 space-y-1 overflow-y-auto pr-1">
+                  {notifyLoading ? (
+                    <li className="text-sm text-muted">…</li>
+                  ) : notifyRecipients.length === 0 ? (
+                    <li className="text-sm text-muted">
+                      Personne dans ce filtre.
+                    </li>
+                  ) : (
+                    notifyRecipients.map((m) => {
+                      const checked = notifySelected.includes(m._id);
+                      return (
+                        <li key={m._id}>
+                          <label className="flex cursor-pointer items-start gap-2 rounded-lg px-2 py-1.5 hover:bg-white/5">
+                            <input
+                              type="checkbox"
+                              className="mt-1"
+                              checked={checked}
+                              onChange={() => toggleNotifyMember(m._id)}
+                            />
+                            <span className="min-w-0 flex-1">
+                              <span className="block truncate text-sm text-white">
+                                {m.full_name}
+                                {m.member_number ? (
+                                  <span className="ml-1 text-xs text-muted">
+                                    {m.member_number}
+                                  </span>
+                                ) : null}
+                              </span>
+                              <span className="block truncate text-xs text-muted">
+                                {m.email} · {m.visits_count ?? 0} passage
+                                {(m.visits_count ?? 0) > 1 ? "s" : ""}
+                              </span>
+                            </span>
+                          </label>
+                        </li>
+                      );
+                    })
+                  )}
+                </ul>
+                {notifySelectedMembers.length > 0 &&
+                notifySelectedMembers.length <= 8 ? (
+                  <p className="mt-2 text-xs text-muted">
+                    →{" "}
+                    {notifySelectedMembers
+                      .map((m) => m.full_name.split(" ")[0] || m.full_name)
+                      .join(", ")}
+                  </p>
+                ) : null}
+              </div>
+
               <div>
                 <label className="label-field">Objet</label>
                 <input
@@ -865,7 +1074,7 @@ export default function AdherentsPage() {
               <div>
                 <label className="label-field">Message</label>
                 <textarea
-                  className="input-field min-h-[140px]"
+                  className="input-field min-h-[120px]"
                   value={notifyMessage}
                   onChange={(e) => setNotifyMessage(e.target.value)}
                   placeholder="Ton message…"
@@ -879,9 +1088,20 @@ export default function AdherentsPage() {
               <Button variant="ghost" onClick={() => setNotifyOpen(false)}>
                 Annuler
               </Button>
-              <Button disabled={busy} onClick={() => void sendNotify()}>
+              <Button
+                disabled={
+                  busy ||
+                  notifyLoading ||
+                  !notifySelected.length ||
+                  !notifySubject.trim() ||
+                  !notifyMessage.trim()
+                }
+                onClick={() => void sendNotify()}
+              >
                 <Mail size={16} />
-                {busy ? "Envoi…" : "Envoyer"}
+                {busy
+                  ? "Envoi…"
+                  : `Envoyer (${notifySelected.length})`}
               </Button>
             </div>
           </div>

@@ -1,7 +1,22 @@
 import { requireSession } from "@/lib/api-auth";
 import { sendDocumentEmail } from "@/lib/brevo";
+import { AVANT_PREMIERE_MIN_VISITS } from "@/lib/constants";
+import { getVisitsCountMap } from "@/lib/public-store";
 import { loadStore } from "@/lib/store";
 import { NextResponse } from "next/server";
+
+export type NotifyAudience =
+  | "all_consent"
+  | "avant_premiere"
+  | "never_visited"
+  | "has_visited";
+
+const AUDIENCES = new Set<NotifyAudience>([
+  "all_consent",
+  "avant_premiere",
+  "never_visited",
+  "has_visited",
+]);
 
 /** Envoie une info aux adhérents (email via Brevo). */
 export async function POST(req: Request) {
@@ -15,6 +30,10 @@ export async function POST(req: Request) {
     ? body.member_ids.map(String)
     : [];
   const only_consent = body.only_consent !== false;
+  const audienceRaw = String(body.audience || "all_consent");
+  const audience: NotifyAudience = AUDIENCES.has(audienceRaw as NotifyAudience)
+    ? (audienceRaw as NotifyAudience)
+    : "all_consent";
 
   if (!subject || !message) {
     return NextResponse.json(
@@ -24,22 +43,30 @@ export async function POST(req: Request) {
   }
 
   const store = await loadStore();
-  let targets = store.members ?? [];
+  let targets = (store.members ?? []).filter(
+    (m) => m.membership_status === "active" && m.email
+  );
+  if (only_consent) {
+    targets = targets.filter((m) => m.consent_communications);
+  }
+
   if (member_ids.length) {
     const set = new Set(member_ids);
     targets = targets.filter((m) => set.has(m._id));
-  } else {
-    targets = targets.filter((m) => m.membership_status === "active");
-  }
-  if (only_consent) {
-    targets = targets.filter((m) => m.consent_communications && m.email);
-  } else {
-    targets = targets.filter((m) => m.email);
+  } else if (audience !== "all_consent") {
+    const visits = await getVisitsCountMap(targets.map((m) => m._id));
+    targets = targets.filter((m) => {
+      const n = visits[m._id] ?? 0;
+      if (audience === "avant_premiere") return n >= AVANT_PREMIERE_MIN_VISITS;
+      if (audience === "never_visited") return n === 0;
+      if (audience === "has_visited") return n >= 1;
+      return true;
+    });
   }
 
   if (!targets.length) {
     return NextResponse.json(
-      { error: "Aucun adhérent à contacter (email / consentement)" },
+      { error: "Aucun adhérent à contacter pour ce filtre" },
       { status: 400 }
     );
   }
