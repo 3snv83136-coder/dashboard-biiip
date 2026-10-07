@@ -46,7 +46,7 @@ export async function POST(req: Request) {
   }
   if (body.accepted_terms !== true) {
     return NextResponse.json(
-      { error: "Coche la case pour accepter les conditions d'adhésion." },
+      { error: "Coche la case pour accepter le règlement intérieur." },
       { status: 400 }
     );
   }

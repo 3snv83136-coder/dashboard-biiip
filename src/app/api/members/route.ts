@@ -73,7 +73,7 @@ export async function POST(req: Request) {
 
   if (!accepted_terms) {
     return NextResponse.json(
-      { error: "L’acceptation des conditions d’adhésion est obligatoire" },
+      { error: "L’acceptation du règlement intérieur est obligatoire" },
       { status: 400 }
     );
   }

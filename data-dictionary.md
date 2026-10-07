@@ -220,9 +220,9 @@ Adhérents de l’association Biiip Comedy Club. **Adhésion gratuite** : inscri
 | `membership_status` | enum | `pending` \| `active` \| `lapsed` \| `cancelled` |
 | `is_fee_paid` | bool | Cotisation réglée |
 | `fee_paid_at` | date \| null | Date de paiement |
-| `accepted_terms` | bool | Acceptation des conditions d’adhésion |
+| `accepted_terms` | bool | Acceptation du règlement intérieur / conditions d’adhésion |
 | `accepted_terms_at` | date \| null | Date d’acceptation |
-| `terms_version` | string | Version des conditions acceptées |
+| `terms_version` | string | Version du règlement intérieur accepté (`MEMBERSHIP_TERMS_VERSION`) |
 | `consent_communications` | bool | Consentement envoi de la programmation (email) — case facultative, non pré-cochée |
 | `member_number` | string | Numéro public d’adhérent `BIIIP-000123` (compteur atomique `counters`) |
 | `signup_source` | string | Origine : `qr-salle`, `qr-bar`, `site`, `reservation`, `dashboard`… (paramètre `?src=`) |

@@ -42,7 +42,7 @@ export function JoinForm({ source }: { source: string }) {
       return;
     }
     if (!accepted) {
-      setError("Coche la case pour accepter les conditions d'adhésion.");
+      setError("Coche la case pour accepter le règlement intérieur.");
       return;
     }
     setBusy(true);
@@ -135,10 +135,11 @@ export function JoinForm({ source }: { source: string }) {
           onChange={(e) => setAccepted(e.target.checked)}
         />
         <span>
-          J&apos;accepte les{" "}
+          J&apos;accepte le{" "}
           <a href="/adhesion/conditions" target="_blank" rel="noopener">
-            conditions d&apos;adhésion
-          </a>
+            règlement intérieur
+          </a>{" "}
+          et les conditions d&apos;adhésion
         </span>
       </label>
       <label className="club-check" style={{ color: "var(--c-muted)" }}>

@@ -12,6 +12,7 @@ import {
 import {
   DEFAULT_MEMBERSHIP_FEE_AMOUNT,
   MEMBERSHIP_TERMS_BODY,
+  MEMBERSHIP_TERMS_SUBTITLE,
   MEMBERSHIP_TERMS_TITLE,
   MEMBERSHIP_TERMS_VERSION,
 } from "@/lib/membership-terms";
@@ -210,7 +211,7 @@ export default function AdherentsPage() {
     setMessage("");
     try {
       if (!editingId && !form.accepted_terms) {
-        throw new Error("Il faut accepter les conditions d’adhésion");
+        throw new Error("Il faut accepter le règlement intérieur");
       }
       const payload = {
         full_name: form.full_name,
@@ -460,7 +461,7 @@ export default function AdherentsPage() {
         className="text-left text-sm text-cyan underline-offset-2 hover:underline"
         onClick={() => setTermsOpen((v) => !v)}
       >
-        {termsOpen ? "Masquer" : "Voir"} les conditions d’adhésion (v
+        {termsOpen ? "Masquer" : "Voir"} le règlement intérieur (v
         {MEMBERSHIP_TERMS_VERSION})
       </button>
 
@@ -469,6 +470,7 @@ export default function AdherentsPage() {
           <h3 className="font-display text-base font-semibold text-white">
             {MEMBERSHIP_TERMS_TITLE}
           </h3>
+          <p className="mt-1 text-xs text-muted">{MEMBERSHIP_TERMS_SUBTITLE}</p>
           <pre className="mt-3 whitespace-pre-wrap font-sans text-sm">
             {MEMBERSHIP_TERMS_BODY}
           </pre>
@@ -905,16 +907,16 @@ export default function AdherentsPage() {
                     }
                   />
                   <span>
-                    J’accepte les{" "}
+                    J’accepte le{" "}
                     <button
                       type="button"
                       className="text-cyan underline"
                       onClick={() => setTermsOpen(true)}
                     >
-                      conditions d’adhésion
+                      règlement intérieur
                     </button>{" "}
-                    (v{MEMBERSHIP_TERMS_VERSION}) et les statuts de
-                    l’association. *
+                    (v{MEMBERSHIP_TERMS_VERSION}) et les conditions
+                    d’adhésion. *
                   </span>
                 </label>
               ) : null}

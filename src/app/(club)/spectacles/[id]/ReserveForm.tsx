@@ -145,7 +145,7 @@ export function ReserveForm({ showId, seatsLeft }: { showId: string; seatsLeft: 
         <span>
           J&apos;adhère gratuitement au Biiip Comedy Club (
           <a href="/adhesion/conditions" target="_blank" rel="noopener">
-            conditions
+            règlement intérieur
           </a>
           )
         </span>
