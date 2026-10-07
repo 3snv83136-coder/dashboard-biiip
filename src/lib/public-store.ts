@@ -402,16 +402,26 @@ export async function countMemberVisits(member_id: string): Promise<number> {
 }
 
 export async function listReservationsForMember(
-  member_id: string
+  member_id: string,
+  email?: string
 ): Promise<SeatReservation[]> {
-  if (!member_id) return [];
+  if (!member_id && !email) return [];
+  const e = email ? normalizeEmail(email) : "";
+
   if (!isMongoEnabled()) {
     return mem()
-      .reservations.filter((r) => r.member_id === member_id)
+      .reservations.filter(
+        (r) =>
+          (member_id && r.member_id === member_id) ||
+          (e && normalizeEmail(r.email) === e)
+      )
       .sort((a, b) => b.created_at.localeCompare(a.created_at));
   }
   await connectMongo();
-  return (await SeatReservationModel.find({ member_id })
+  const or: Record<string, unknown>[] = [];
+  if (member_id) or.push({ member_id });
+  if (e) or.push({ email: e });
+  return (await SeatReservationModel.find({ $or: or })
     .sort({ created_at: -1 })
     .lean()) as SeatReservation[];
 }

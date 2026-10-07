@@ -1,12 +1,68 @@
 import { requireSession } from "@/lib/api-auth";
+import { AVANT_PREMIERE_MIN_VISITS } from "@/lib/constants";
 import {
   DEFAULT_MEMBERSHIP_FEE_AMOUNT,
   MEMBERSHIP_TERMS_VERSION,
 } from "@/lib/membership-terms";
 import { nowIso } from "@/lib/ids";
+import {
+  countMemberVisits,
+  listReservationsForMember,
+} from "@/lib/public-store";
 import { loadStore, saveStore } from "@/lib/store";
 import type { MembershipStatus } from "@/lib/types";
 import { NextResponse } from "next/server";
+
+/** Fiche adhérent + historique des réservations / passages. */
+export async function GET(
+  _req: Request,
+  { params }: { params: { id: string } }
+) {
+  const { error } = await requireSession(["admin", "staff"]);
+  if (error) return error;
+
+  const store = await loadStore();
+  const member = (store.members ?? []).find((m) => m._id === params.id);
+  if (!member) {
+    return NextResponse.json({ error: "Adhérent introuvable" }, { status: 404 });
+  }
+
+  const reservations = await listReservationsForMember(
+    member._id,
+    member.email
+  );
+  const showsById = new Map(store.shows.map((s) => [s._id, s]));
+  const history = reservations.map((r) => {
+    const show = showsById.get(r.show_id);
+    return {
+      _id: r._id,
+      show_id: r.show_id,
+      show_title: show?.title || "Soirée",
+      show_date: show?.show_date || null,
+      start_time: show?.start_time || null,
+      seats_count: r.seats_count,
+      reservation_status: r.reservation_status,
+      ticket_code: r.ticket_code,
+      member_number: r.member_number || member.member_number || null,
+      created_at: r.created_at,
+      updated_at: r.updated_at,
+      did_attend: r.reservation_status === "presente",
+    };
+  });
+
+  const visits_count = await countMemberVisits(member._id);
+  // Compte aussi les présentes liées par email sans member_id
+  const visits_from_history = history.filter((h) => h.did_attend).length;
+  const visits = Math.max(visits_count, visits_from_history);
+
+  return NextResponse.json({
+    member,
+    visits_count: visits,
+    is_avant_premiere_eligible: visits >= AVANT_PREMIERE_MIN_VISITS,
+    avant_premiere_min_visits: AVANT_PREMIERE_MIN_VISITS,
+    history,
+  });
+}
 
 export async function PATCH(
   req: Request,

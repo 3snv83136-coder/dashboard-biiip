@@ -7,6 +7,7 @@ import {
   AVANT_PREMIERE_MIN_VISITS,
   MEMBERSHIP_STATUS_COLORS,
   MEMBERSHIP_STATUS_LABELS,
+  SEAT_RESERVATION_STATUS_LABELS,
 } from "@/lib/constants";
 import {
   DEFAULT_MEMBERSHIP_FEE_AMOUNT,
@@ -14,7 +15,11 @@ import {
   MEMBERSHIP_TERMS_TITLE,
   MEMBERSHIP_TERMS_VERSION,
 } from "@/lib/membership-terms";
-import type { Member, MembershipStatus } from "@/lib/types";
+import type {
+  Member,
+  MembershipStatus,
+  SeatReservationStatus,
+} from "@/lib/types";
 import {
   Download,
   Mail,
@@ -29,6 +34,41 @@ type MemberRow = Member & {
   visits_count?: number;
   is_avant_premiere_eligible?: boolean;
 };
+
+type VisitRow = {
+  _id: string;
+  show_title: string;
+  show_date: string | null;
+  start_time: string | null;
+  seats_count: number;
+  reservation_status: SeatReservationStatus;
+  ticket_code: string;
+  did_attend: boolean;
+  created_at: string;
+};
+
+type MemberDetail = {
+  member: Member;
+  visits_count: number;
+  is_avant_premiere_eligible: boolean;
+  history: VisitRow[];
+};
+
+const STATUS_VISIT_COLORS: Record<SeatReservationStatus, string> = {
+  confirmee: "#00d9ff",
+  presente: "#3ddc97",
+  annulee: "#e94560",
+};
+
+function frDate(d: string | null) {
+  if (!d) return "—";
+  return new Date(`${d}T12:00:00`).toLocaleDateString("fr-FR", {
+    weekday: "short",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+}
 
 const emptyForm = () => ({
   full_name: "",
@@ -59,6 +99,8 @@ export default function AdherentsPage() {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [detail, setDetail] = useState<MemberDetail | null>(null);
+  const [detailBusy, setDetailBusy] = useState(false);
 
   const load = useCallback(async (query = "", eligible = onlyEligible) => {
     const params = new URLSearchParams();
@@ -98,6 +140,26 @@ export default function AdherentsPage() {
     });
     setOpen(true);
     setError("");
+  }
+
+  async function openDetail(m: MemberRow) {
+    setDetailBusy(true);
+    setError("");
+    try {
+      const res = await fetch(`/api/members/${m._id}`);
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Fiche introuvable");
+      setDetail({
+        member: json.member,
+        visits_count: json.visits_count ?? 0,
+        is_avant_premiere_eligible: Boolean(json.is_avant_premiere_eligible),
+        history: json.history ?? [],
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erreur");
+    } finally {
+      setDetailBusy(false);
+    }
   }
 
   async function saveMember() {
@@ -325,7 +387,11 @@ export default function AdherentsPage() {
             </thead>
             <tbody>
               {members.map((m) => (
-                <tr key={m._id} className="border-b border-white/5">
+                <tr
+                  key={m._id}
+                  className="cursor-pointer border-b border-white/5 transition hover:bg-white/5"
+                  onClick={() => void openDetail(m)}
+                >
                   <td className="px-4 py-3 font-medium">
                     {m.full_name || <span className="text-muted">(sans nom)</span>}
                     {m.member_number ? (
@@ -389,7 +455,7 @@ export default function AdherentsPage() {
                       {MEMBERSHIP_STATUS_LABELS[m.membership_status]}
                     </span>
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                     <div className="flex flex-wrap gap-1">
                       <Button
                         variant="ghost"
@@ -440,6 +506,146 @@ export default function AdherentsPage() {
           <Button onClick={openCreate}>Nouvel adhérent</Button>
         </EmptyState>
       )}
+
+      {detailBusy ? (
+        <p className="text-sm text-muted">Ouverture de la fiche…</p>
+      ) : null}
+
+      {detail ? (
+        <div className="modal-sheet" onClick={() => setDetail(null)}>
+          <div
+            className="modal-panel max-h-[90vh] max-w-lg overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h3 className="font-display text-lg font-semibold">
+                  {detail.member.full_name || "Adhérent"}
+                </h3>
+                {detail.member.member_number ? (
+                  <p className="mt-1 font-mono text-sm text-cyan">
+                    {detail.member.member_number}
+                  </p>
+                ) : null}
+              </div>
+              <Button variant="ghost" onClick={() => setDetail(null)}>
+                Fermer
+              </Button>
+            </div>
+
+            <div className="mt-4 grid gap-2 text-sm">
+              <p>
+                <span className="text-muted">Email · </span>
+                {detail.member.email || "—"}
+              </p>
+              <p>
+                <span className="text-muted">Tél · </span>
+                {detail.member.phone || "—"}
+              </p>
+              <p>
+                <span className="text-muted">Adresse · </span>
+                {[
+                  detail.member.address_line,
+                  [detail.member.postal_code, detail.member.city]
+                    .filter(Boolean)
+                    .join(" "),
+                ]
+                  .filter(Boolean)
+                  .join(", ") || "—"}
+              </p>
+              <p>
+                <span className="text-muted">Adhérent depuis · </span>
+                {frDate(detail.member.joined_at?.slice(0, 10) || null)}
+              </p>
+              <p>
+                <span className="text-muted">Passages · </span>
+                <b className="text-white">{detail.visits_count}</b>
+                {detail.is_avant_premiere_eligible ? (
+                  <span className="ml-2 text-xs text-cyan">
+                    · éligible avant-première
+                  </span>
+                ) : null}
+              </p>
+              {detail.member.internal_notes ? (
+                <p className="rounded-xl bg-black/20 p-3 text-muted">
+                  Notes · {detail.member.internal_notes}
+                </p>
+              ) : null}
+            </div>
+
+            <div className="mt-5 flex flex-wrap gap-2">
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  openEdit(detail.member);
+                  setDetail(null);
+                }}
+              >
+                <Pencil size={14} /> Modifier
+              </Button>
+              <Button
+                variant="ghost"
+                disabled={
+                  busy ||
+                  !detail.member.email ||
+                  !(
+                    detail.member.full_name ||
+                    (detail.member.first_name && detail.member.last_name)
+                  )
+                }
+                onClick={() => void sendCard(detail.member)}
+              >
+                <Mail size={14} /> Carte
+              </Button>
+            </div>
+
+            <h4 className="mt-6 font-display text-base font-semibold">
+              Historique des soirées
+            </h4>
+            <p className="mt-1 text-xs text-muted">
+              « Présent » = pointé à l’entrée. « Confirmée » = réservé mais pas
+              encore venu / pas pointé.
+            </p>
+
+            {detail.history.length ? (
+              <ul className="mt-3 space-y-2">
+                {detail.history.map((h) => (
+                  <li
+                    key={h._id}
+                    className="rounded-xl border border-white/10 bg-black/20 px-3 py-2.5 text-sm"
+                  >
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div>
+                        <p className="font-medium">{h.show_title}</p>
+                        <p className="text-xs text-muted">
+                          {frDate(h.show_date)}
+                          {h.start_time ? ` · ${h.start_time}` : ""}
+                          {` · ${h.seats_count} place${h.seats_count > 1 ? "s" : ""}`}
+                        </p>
+                      </div>
+                      <span
+                        className="rounded-full px-2 py-0.5 text-xs font-semibold"
+                        style={{
+                          backgroundColor: `${STATUS_VISIT_COLORS[h.reservation_status]}22`,
+                          color: STATUS_VISIT_COLORS[h.reservation_status],
+                        }}
+                      >
+                        {h.did_attend
+                          ? "Venu ✓"
+                          : SEAT_RESERVATION_STATUS_LABELS[h.reservation_status]}
+                      </span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="mt-3 text-sm text-muted">
+                Aucune réservation liée pour l’instant.
+              </p>
+            )}
+          </div>
+        </div>
+      ) : null}
 
       {open ? (
         <div className="modal-sheet">
