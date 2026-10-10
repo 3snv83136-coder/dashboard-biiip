@@ -46,7 +46,7 @@ export default async function CartePage({ params }: { params: { id: string } }) 
         <p className="club-sub">Ton adhésion est validée.</p>
       </div>
 
-      <MemberCardSave memberNumber={memberNumber}>
+      <MemberCardSave memberId={member._id} memberNumber={memberNumber}>
         <div className="club-card">
           <ClubLogo size={90} />
           <div className="club-card-role">Carte d&apos;adhérent</div>

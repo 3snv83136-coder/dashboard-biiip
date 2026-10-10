@@ -1,9 +1,10 @@
 "use client";
 
 import { toPng } from "html-to-image";
-import { useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 
 type Props = {
+  memberId: string;
   memberNumber: string;
   children: ReactNode;
 };
@@ -11,18 +12,26 @@ type Props = {
 /**
  * Enveloppe la carte visuelle + actions mobiles :
  * - Enregistrer / partager en PNG (Photos)
+ * - Ajouter à Apple Wallet (.pkpass) si configuré
  * - Consigne « écran d'accueil »
  */
-export function MemberCardSave({ memberNumber, children }: Props) {
+export function MemberCardSave({ memberId, memberNumber, children }: Props) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [busy, setBusy] = useState(false);
   const [hint, setHint] = useState("");
+  const [appleWallet, setAppleWallet] = useState(false);
+
+  useEffect(() => {
+    void fetch("/api/public/wallet-status")
+      .then((r) => r.json())
+      .then((j) => setAppleWallet(Boolean(j.apple_wallet)))
+      .catch(() => setAppleWallet(false));
+  }, []);
 
   async function exportPng(): Promise<Blob> {
     const node = cardRef.current;
     if (!node) throw new Error("Carte introuvable");
 
-    // Fond opaque pour Photos / fond d’écran (évite le PNG transparent)
     const dataUrl = await toPng(node, {
       cacheBust: true,
       pixelRatio: 2,
@@ -52,7 +61,9 @@ export function MemberCardSave({ memberNumber, children }: Props) {
           title: "Carte Biiip",
           text: "Ma carte d'adhérent Biiip Comedy Club",
         });
-        setHint("Parfait — enregistre l’image dans Photos, ou fixe-la en fond d’écran.");
+        setHint(
+          "Parfait — enregistre l’image dans Photos, ou fixe-la en fond d’écran."
+        );
         return;
       }
 
@@ -64,12 +75,16 @@ export function MemberCardSave({ memberNumber, children }: Props) {
       URL.revokeObjectURL(url);
       setHint("Image téléchargée. Ouvre-la et enregistre-la dans tes Photos.");
     } catch (err) {
-      // Annulation du share sheet = normal
-      if (err instanceof Error && /AbortError|canceled|cancelled/i.test(err.name + err.message)) {
+      if (
+        err instanceof Error &&
+        /AbortError|canceled|cancelled/i.test(err.name + err.message)
+      ) {
         return;
       }
       console.error("[member-card] export", err);
-      setHint("Impossible d’exporter la carte. Fais une capture d’écran pour l’instant.");
+      setHint(
+        "Impossible d’exporter la carte. Fais une capture d’écran pour l’instant."
+      );
     } finally {
       setBusy(false);
     }
@@ -90,6 +105,24 @@ export function MemberCardSave({ memberNumber, children }: Props) {
         >
           {busy ? "Préparation…" : "Enregistrer sur mon téléphone"}
         </button>
+
+        {appleWallet ? (
+          <a
+            className="club-btn club-btn-wallet"
+            href={`/api/public/members/${memberId}/apple-wallet`}
+          >
+            Ajouter à Apple Wallet
+          </a>
+        ) : (
+          <p className="club-card-tip" style={{ marginTop: 12 }}>
+            <b>Apple Wallet</b>
+            <br />
+            Bientôt disponible (certificat Pass Type ID Apple à activer côté
+            asso). En attendant, enregistre l’image ou ajoute la page à l’écran
+            d’accueil.
+          </p>
+        )}
+
         <p className="club-card-tip">
           <b>Astuce écran d’accueil</b>
           <br />

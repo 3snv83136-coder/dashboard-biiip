@@ -76,6 +76,24 @@
 - Dans les deux cas, le JSON-LD (`seo_json_ld`) et l'`alt_text` sont produits côté dashboard et injectés dans les pages du site.
 - **Env (option b)** : `SITE_PUBLISH_WEBHOOK_URL`, `SITE_REVALIDATE_TOKEN`
 
+## 9. Apple Wallet (carte adhérent `.pkpass`)
+- **Rôle** : bouton « Ajouter à Apple Wallet » sur `/adhesion/carte/[id]`.
+- **Prérequis Apple** (compte développeur payant) :
+  1. Créer un **Pass Type ID** (ex. `pass.fr.biiipcomedyclub.adherent`)
+  2. Certificat de signature Pass + clé privée (PEM)
+  3. Certificat **WWDR** Apple (Worldwide Developer Relations)
+  4. **Team ID** Apple
+- **Env Vercel** (PEM brut avec `\n`, ou base64) :
+  - `APPLE_PASS_TYPE_ID`
+  - `APPLE_TEAM_ID`
+  - `APPLE_PASS_WWDR`
+  - `APPLE_PASS_SIGNER_CERT`
+  - `APPLE_PASS_SIGNER_KEY`
+  - `APPLE_PASS_SIGNER_PASSPHRASE` (si la clé est chiffrée)
+  - `APPLE_PASS_ORG_NAME` (optionnel, défaut « Biiip Comedy Club »)
+- Sans ces variables : la carte reste téléchargeable en **PNG** / écran d’accueil ; le bouton Wallet reste en « bientôt ».
+- **Google Wallet** : non branché (issuer Google distinct) — à prévoir si besoin Android natif.
+
 ---
 
 ## Réseaux sociaux — *v1.1* (publication auto)
@@ -107,4 +125,12 @@ META_PAGE_ACCESS_TOKEN=
 IG_BUSINESS_ACCOUNT_ID=
 TIKTOK_CLIENT_KEY=
 TIKTOK_CLIENT_SECRET=
+# Apple Wallet (carte adhérent)
+APPLE_PASS_TYPE_ID=
+APPLE_TEAM_ID=
+APPLE_PASS_WWDR=
+APPLE_PASS_SIGNER_CERT=
+APPLE_PASS_SIGNER_KEY=
+APPLE_PASS_SIGNER_PASSPHRASE=
+APPLE_PASS_ORG_NAME=Biiip Comedy Club
 ```

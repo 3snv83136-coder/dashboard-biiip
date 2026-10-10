@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/Button";
+import { PhotoSourcePicker } from "@/components/ui/PhotoSourcePicker";
 import {
   BIIIP_REVIEW_TITLE_EN,
   BIIIP_REVIEW_TITLE_FR,
@@ -444,29 +445,28 @@ export default function MediasPage() {
         <div className="grid gap-3 md:grid-cols-2">
           <div className="md:col-span-2">
             <label className="label-field">Photo ou vidéo</label>
-            <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-white/20 bg-black/20 px-4 py-8 text-sm text-muted hover:border-cyan/40">
-              <Upload size={22} className="text-cyan" />
-              {uploading
-                ? "Upload en cours…"
-                : form.photo_1
-                  ? "Changer le fichier"
-                  : "Choisir / prendre une photo"}
-              <span className="px-4 text-center text-xs text-muted/80">
-                JPG, PNG, WEBP, HEIC, GIF · ou MP4/MOV (max 4 Mo)
-              </span>
-              <input
-                type="file"
-                accept="image/*,video/*,.heic,.heif,.jpg,.jpeg,.png,.webp,.gif,.avif,.bmp,.tif,.tiff,.jfif,.mp4,.mov,.webm,.m4v"
-                capture="environment"
-                className="hidden"
+            <div className="rounded-2xl border border-dashed border-white/20 bg-black/20 px-4 py-6">
+              <div className="mb-3 flex justify-center text-cyan">
+                <Upload size={22} />
+              </div>
+              <PhotoSourcePicker
                 disabled={uploading || busy}
-                onChange={(e) => {
-                  const f = e.target.files?.[0] ?? null;
-                  void onMediaFile(f);
-                  e.target.value = "";
-                }}
+                accept="image/*,video/*,.heic,.heif,.jpg,.jpeg,.png,.webp,.gif,.avif,.bmp,.tif,.tiff,.jfif,.mp4,.mov,.webm,.m4v"
+                libraryLabel={
+                  uploading
+                    ? "Upload…"
+                    : form.photo_1
+                      ? "Photothèque / fichiers"
+                      : "Photothèque / fichiers"
+                }
+                cameraLabel="Prendre une photo"
+                className="justify-center"
+                onFile={(file) => void onMediaFile(file)}
               />
-            </label>
+              <p className="mt-3 text-center text-xs text-muted/80">
+                JPG, PNG, WEBP, HEIC, GIF · ou MP4/MOV (max 4 Mo)
+              </p>
+            </div>
             {form.photo_1 ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img

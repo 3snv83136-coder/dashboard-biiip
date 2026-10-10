@@ -2,9 +2,10 @@
 
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { PhotoSourcePicker } from "@/components/ui/PhotoSourcePicker";
 import { ARTIST_LEVEL_LABELS } from "@/lib/constants";
 import type { Artist, ArtistLevel } from "@/lib/types";
-import { ClipboardPaste, ImagePlus, Plus, Search } from "lucide-react";
+import { ClipboardPaste, Plus, Search } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -259,21 +260,12 @@ sara@mail.fr
                 placeholder="Colle ici… (tu peux aussi coller une image)"
               />
               <div className="mt-2 flex flex-wrap items-center gap-2">
-                <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-white/10 px-3 py-2 text-sm hover:bg-white/5">
-                  <ImagePlus size={16} />
-                  {ocrBusy ? "Lecture…" : "Ajouter une photo"}
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    disabled={ocrBusy}
-                    onChange={(e) => {
-                      const f = e.target.files?.[0];
-                      if (f) void ocrFromFile(f);
-                      e.target.value = "";
-                    }}
-                  />
-                </label>
+                <PhotoSourcePicker
+                  disabled={ocrBusy}
+                  onFile={(f) => void ocrFromFile(f)}
+                  libraryLabel={ocrBusy ? "Lecture…" : "Photothèque"}
+                  cameraLabel="Photo OCR"
+                />
                 <p className="text-xs text-muted">
                   {previewCount} fiche{previewCount > 1 ? "s" : ""} détectée
                   {previewCount > 1 ? "s" : ""}

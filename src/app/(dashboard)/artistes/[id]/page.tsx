@@ -2,6 +2,7 @@
 
 import { ArtistAccessQr } from "@/components/artists/ArtistAccessQr";
 import { Button } from "@/components/ui/Button";
+import { PhotoSourcePicker } from "@/components/ui/PhotoSourcePicker";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { ARTIST_LEVEL_LABELS, DOC_TYPE_LABELS } from "@/lib/constants";
 import { fileToJpegFile } from "@/lib/image-resize";
@@ -18,7 +19,7 @@ import {
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 type EditForm = {
   stage_name: string;
@@ -76,7 +77,6 @@ export default function ArtisteDetailPage() {
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState<EditForm | null>(null);
   const [saveMsg, setSaveMsg] = useState("");
-  const photoInputRef = useRef<HTMLInputElement>(null);
 
   const load = useCallback(async () => {
     const res = await fetch(`/api/artists/${params.id}`);
@@ -196,7 +196,6 @@ export default function ArtisteDetailPage() {
       setSaveMsg(err instanceof Error ? err.message : "Erreur photo");
     } finally {
       setPhotoBusy(false);
-      if (photoInputRef.current) photoInputRef.current.value = "";
     }
   }
 
@@ -250,20 +249,9 @@ export default function ArtisteDetailPage() {
       </Link>
 
       <div className="panel p-5">
-        <input
-          ref={photoInputRef}
-          type="file"
-          accept="image/*,.heic,.heif"
-          capture="environment"
-          className="hidden"
-          onChange={(e) => {
-            const file = e.target.files?.[0];
-            if (file) void uploadPhoto(file);
-          }}
-        />
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="flex gap-4">
-            <div className="relative shrink-0">
+            <div className="shrink-0">
               {artist.photo_url ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
@@ -276,24 +264,20 @@ export default function ArtisteDetailPage() {
                   <Camera size={28} />
                 </div>
               )}
-              <button
-                type="button"
-                disabled={photoBusy}
-                onClick={() => photoInputRef.current?.click()}
-                className="absolute -bottom-2 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-cyan px-2.5 py-1 text-[11px] font-semibold text-night shadow"
-              >
-                {photoBusy
-                  ? "…"
-                  : artist.photo_url
-                    ? "Changer"
-                    : "Ajouter"}
-              </button>
             </div>
             <div>
               <h2 className="font-display text-2xl font-bold">
                 {artist.stage_name}
               </h2>
               <p className="text-muted">{artist.legal_name}</p>
+              <div className="mt-2">
+                <PhotoSourcePicker
+                  disabled={photoBusy}
+                  onFile={(file) => void uploadPhoto(file)}
+                  libraryLabel={photoBusy ? "Upload…" : "Photothèque"}
+                  cameraLabel="Appareil photo"
+                />
+              </div>
               {artist.photo_url ? (
                 <button
                   type="button"
@@ -362,26 +346,21 @@ export default function ArtisteDetailPage() {
             ))}
             <div className="md:col-span-2">
               <label className="label-field">Photo</label>
-              <div className="flex flex-wrap items-center gap-2">
-                <Button
-                  type="button"
-                  variant="secondary"
-                  disabled={photoBusy}
-                  onClick={() => photoInputRef.current?.click()}
-                >
-                  <Camera size={16} />
-                  {photoBusy ? "Upload…" : "Choisir / prendre une photo"}
-                </Button>
-                {form.photo_url ? (
-                  <span className="truncate text-xs text-muted">
-                    {form.photo_url.startsWith("data:")
-                      ? "Photo enregistrée"
-                      : form.photo_url}
-                  </span>
-                ) : (
-                  <span className="text-xs text-muted">Aucune photo</span>
-                )}
-              </div>
+              <PhotoSourcePicker
+                disabled={photoBusy}
+                onFile={(file) => void uploadPhoto(file)}
+                libraryLabel={photoBusy ? "Upload…" : "Photothèque"}
+                cameraLabel="Appareil photo"
+              />
+              {form.photo_url ? (
+                <p className="mt-1 truncate text-xs text-muted">
+                  {form.photo_url.startsWith("data:")
+                    ? "Photo enregistrée"
+                    : form.photo_url}
+                </p>
+              ) : (
+                <p className="mt-1 text-xs text-muted">Aucune photo</p>
+              )}
             </div>
             <div>
               <label className="label-field">Niveau</label>

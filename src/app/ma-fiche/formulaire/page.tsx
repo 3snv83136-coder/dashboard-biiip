@@ -1,7 +1,8 @@
 "use client";
 
+import { PhotoSourcePicker } from "@/components/ui/PhotoSourcePicker";
 import { fileToPhotoDataUrl } from "@/lib/image-resize";
-import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
 type PortalArtist = {
@@ -107,7 +108,6 @@ const STEPS: Step[] = [
 
 export default function MaFicheFormPage() {
   const router = useRouter();
-  const fileRef = useRef<HTMLInputElement>(null);
   const [form, setForm] = useState<PortalArtist>(empty);
   const [step, setStep] = useState(0);
   const [busy, setBusy] = useState(false);
@@ -146,8 +146,7 @@ export default function MaFicheFormPage() {
     return true;
   }
 
-  async function onPickPhoto(file: File | null) {
-    if (!file) return;
+  async function onPickPhoto(file: File) {
     setUploading(true);
     setError("");
     try {
@@ -157,7 +156,6 @@ export default function MaFicheFormPage() {
       setError(e instanceof Error ? e.message : "Upload impossible");
     } finally {
       setUploading(false);
-      if (fileRef.current) fileRef.current.value = "";
     }
   }
 
@@ -254,31 +252,20 @@ export default function MaFicheFormPage() {
                     </div>
                   )}
 
-                  <input
-                    ref={fileRef}
-                    id={current.key}
-                    type="file"
-                    accept="image/*,.heic,.heif,.jpg,.jpeg,.png,.webp,.gif,.avif,.bmp,.tif,.tiff,.jfif"
-                    capture="environment"
-                    className="hidden"
-                    onChange={(e) => {
-                      void onPickPhoto(e.target.files?.[0] ?? null);
-                      e.target.value = "";
-                    }}
-                  />
-
-                  <button
-                    type="button"
-                    className="spectacle-btn"
+                  <PhotoSourcePicker
+                    variant="plain"
                     disabled={uploading}
-                    onClick={() => fileRef.current?.click()}
-                  >
-                    {uploading
-                      ? "Traitement…"
-                      : form.photo_url
-                        ? "Changer la photo"
-                        : "Choisir / prendre une photo"}
-                  </button>
+                    onFile={(file) => void onPickPhoto(file)}
+                    libraryLabel={
+                      uploading
+                        ? "Traitement…"
+                        : form.photo_url
+                          ? "Photothèque"
+                          : "Photothèque"
+                    }
+                    cameraLabel="Prendre une photo"
+                    className="justify-center"
+                  />
 
                   {form.photo_url ? (
                     <button

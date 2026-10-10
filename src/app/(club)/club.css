@@ -38,6 +38,16 @@
 .club-card-export .club-card { margin-top: 26px; }
 .club-card-actions { margin-top: 18px; }
 .club-card-actions .club-btn { margin-top: 0; }
+.club-btn-wallet {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  background: #111;
+  color: #f5f5f7;
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.18);
+}
 .club-card-tip { margin-top: 14px; font-size: 13px; color: var(--c-muted); line-height: 1.5; text-align: center; }
 .club-card-tip b { color: var(--c-text); font-weight: 700; }
 .club-card-tip i { font-style: normal; color: var(--c-cyan); }
