@@ -1,5 +1,5 @@
 import { requireSession } from "@/lib/api-auth";
-import { nowIso } from "@/lib/ids";
+import { createId, nowIso } from "@/lib/ids";
 import { purgeShowPublicData } from "@/lib/public-store";
 import { loadStore, saveStore } from "@/lib/store";
 import type { BookingStatus, ShowType } from "@/lib/types";
@@ -39,10 +39,57 @@ export async function PATCH(
   if (body.internal_notes !== undefined) {
     show.internal_notes = String(body.internal_notes);
   }
+
+  let show_bookings = store.show_bookings.filter((b) => b.show_id === show._id);
+
+  if (Array.isArray(body.artist_ids)) {
+    const seen = new Set<string>();
+    const artist_ids: string[] = [];
+    for (const raw of body.artist_ids) {
+      const id = String(raw);
+      if (seen.has(id)) continue;
+      if (!store.artists.some((a) => a._id === id)) continue;
+      seen.add(id);
+      artist_ids.push(id);
+    }
+    const ts = nowIso();
+    const existingByArtist = new Map(
+      show_bookings.map((b) => [b.artist_id, b] as const)
+    );
+    const next = artist_ids.map((artist_id, index) => {
+      const prev = existingByArtist.get(artist_id);
+      if (prev) {
+        prev.slot_order = index + 1;
+        prev.booking_status = show.booking_status;
+        prev.updated_at = ts;
+        return prev;
+      }
+      const artist = store.artists.find((a) => a._id === artist_id);
+      return {
+        _id: createId("booking"),
+        show_id: show._id,
+        artist_id,
+        slot_order: index + 1,
+        set_duration_min: Number(body.set_duration_min ?? 15),
+        fee_amount: Number(
+          body.fee_amount ?? artist?.default_fee_amount ?? 0
+        ),
+        booking_status: show.booking_status,
+        created_at: ts,
+        updated_at: ts,
+      };
+    });
+    store.show_bookings = [
+      ...store.show_bookings.filter((b) => b.show_id !== show._id),
+      ...next,
+    ];
+    show_bookings = next;
+  }
+
   show.updated_at = nowIso();
 
   await saveStore(store);
-  return NextResponse.json({ show });
+  return NextResponse.json({ show, show_bookings });
 }
 
 export async function DELETE(

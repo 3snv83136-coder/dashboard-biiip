@@ -3,13 +3,22 @@
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { DOC_TYPE_LABELS } from "@/lib/constants";
-import type { Artist, DocType, DocumentRecord, Show } from "@/lib/types";
-import { useCallback, useEffect, useState } from "react";
+import type {
+  Artist,
+  DocType,
+  DocumentRecord,
+  Show,
+  ShowBooking,
+} from "@/lib/types";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 
-export default function DocumentsPage() {
+function DocumentsPageInner() {
+  const searchParams = useSearchParams();
   const [documents, setDocuments] = useState<DocumentRecord[]>([]);
   const [shows, setShows] = useState<Show[]>([]);
   const [artists, setArtists] = useState<Artist[]>([]);
+  const [bookings, setBookings] = useState<ShowBooking[]>([]);
   const [showId, setShowId] = useState("");
   const [artistId, setArtistId] = useState("");
   const [docType, setDocType] = useState<DocType>("conducteur");
@@ -24,11 +33,38 @@ export default function DocumentsPage() {
     setDocuments(json.documents ?? []);
     setShows(json.shows ?? []);
     setArtists(json.artists ?? []);
+    setBookings(json.show_bookings ?? []);
   }, []);
 
   useEffect(() => {
     void load();
   }, [load]);
+
+  useEffect(() => {
+    const fromUrl = searchParams.get("show_id");
+    if (fromUrl) setShowId(fromUrl);
+  }, [searchParams]);
+
+  const artistsForShow = useMemo(() => {
+    if (!showId) return artists;
+    const ids = new Set(
+      bookings.filter((b) => b.show_id === showId).map((b) => b.artist_id)
+    );
+    const booked = artists.filter((a) => ids.has(a._id));
+    return booked.length ? booked : artists;
+  }, [showId, bookings, artists]);
+
+  const usingBookedOnly = useMemo(() => {
+    if (!showId) return false;
+    return bookings.some((b) => b.show_id === showId);
+  }, [showId, bookings]);
+
+  useEffect(() => {
+    if (!artistId) return;
+    if (!artistsForShow.some((a) => a._id === artistId)) {
+      setArtistId("");
+    }
+  }, [artistsForShow, artistId]);
 
   async function generate() {
     setBusy(true);
@@ -76,7 +112,10 @@ export default function DocumentsPage() {
           <select
             className="input-field"
             value={showId}
-            onChange={(e) => setShowId(e.target.value)}
+            onChange={(e) => {
+              setShowId(e.target.value);
+              setArtistId("");
+            }}
           >
             <option value="">Choisir…</option>
             {shows.map((s) => (
@@ -87,19 +126,32 @@ export default function DocumentsPage() {
           </select>
         </div>
         <div>
-          <label className="label-field">Artiste</label>
+          <label className="label-field">
+            Artiste
+            {usingBookedOnly ? (
+              <span className="ml-1 font-normal text-muted">
+                (liés au show)
+              </span>
+            ) : null}
+          </label>
           <select
             className="input-field"
             value={artistId}
             onChange={(e) => setArtistId(e.target.value)}
           >
             <option value="">Choisir…</option>
-            {artists.map((a) => (
+            {artistsForShow.map((a) => (
               <option key={a._id} value={a._id}>
                 {a.stage_name}
+                {!a.email ? " — pas d’email" : ""}
               </option>
             ))}
           </select>
+          {showId && !usingBookedOnly ? (
+            <p className="mt-1 text-xs text-muted">
+              Aucun artiste lié à ce show — rattache-les depuis le calendrier.
+            </p>
+          ) : null}
         </div>
         <div>
           <label className="label-field">Type de document</label>
@@ -181,5 +233,13 @@ export default function DocumentsPage() {
         )}
       </section>
     </div>
+  );
+}
+
+export default function DocumentsPage() {
+  return (
+    <Suspense fallback={<p className="text-muted">Chargement…</p>}>
+      <DocumentsPageInner />
+    </Suspense>
   );
 }

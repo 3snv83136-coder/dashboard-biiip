@@ -4,12 +4,21 @@ import { ArtistAccessQr } from "@/components/artists/ArtistAccessQr";
 import { Button } from "@/components/ui/Button";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { ARTIST_LEVEL_LABELS, DOC_TYPE_LABELS } from "@/lib/constants";
+import { fileToJpegFile } from "@/lib/image-resize";
 import type { Artist, ArtistLevel, DocumentRecord, Show } from "@/lib/types";
-import { Copy, KeyRound, Mail, MessageSquare, Pencil, Trash2 } from "lucide-react";
+import {
+  Camera,
+  Copy,
+  KeyRound,
+  Mail,
+  MessageSquare,
+  Pencil,
+  Trash2,
+} from "lucide-react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 type EditForm = {
   stage_name: string;
@@ -63,9 +72,11 @@ export default function ArtisteDetailPage() {
   const [portalUrl, setPortalUrl] = useState("");
   const [accessMsg, setAccessMsg] = useState("");
   const [busy, setBusy] = useState(false);
+  const [photoBusy, setPhotoBusy] = useState(false);
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState<EditForm | null>(null);
   const [saveMsg, setSaveMsg] = useState("");
+  const photoInputRef = useRef<HTMLInputElement>(null);
 
   const load = useCallback(async () => {
     const res = await fetch(`/api/artists/${params.id}`);
@@ -120,28 +131,89 @@ export default function ArtisteDetailPage() {
     setAccessMsg("Copié ✅");
   }
 
+  async function patchArtist(payload: Record<string, unknown>) {
+    const res = await fetch(`/api/artists/${params.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const json = await res.json();
+    if (!res.ok) {
+      throw new Error(String(json.error || "Impossible d’enregistrer"));
+    }
+    return json.artist as Artist;
+  }
+
   async function saveEdit() {
     if (!form) return;
     setBusy(true);
     setSaveMsg("");
-    const res = await fetch(`/api/artists/${params.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
+    try {
+      const updated = await patchArtist({
         ...form,
         default_fee_amount: Number(form.default_fee_amount) || 0,
-      }),
-    });
-    const json = await res.json();
-    setBusy(false);
-    if (!res.ok) {
-      setSaveMsg(json.error || "Impossible d’enregistrer");
-      return;
+      });
+      setArtist(updated);
+      setForm(toForm(updated));
+      setEditing(false);
+      setSaveMsg("Fiche mise à jour ✅");
+    } catch (err) {
+      setSaveMsg(err instanceof Error ? err.message : "Erreur");
+    } finally {
+      setBusy(false);
     }
-    setArtist(json.artist);
-    setForm(toForm(json.artist));
-    setEditing(false);
-    setSaveMsg("Fiche mise à jour ✅");
+  }
+
+  async function uploadPhoto(file: File) {
+    setPhotoBusy(true);
+    setSaveMsg("");
+    try {
+      let toSend = file;
+      try {
+        toSend = await fileToJpegFile(file, 900, 0.8);
+      } catch {
+        if (file.size > 4 * 1024 * 1024) {
+          throw new Error(
+            "Photo trop lourde (max 4 Mo). Réessaie en JPG."
+          );
+        }
+      }
+
+      const body = new FormData();
+      body.append("file", toSend, toSend.name || "photo.jpg");
+      const up = await fetch("/api/uploads", { method: "POST", body });
+      const upJson = await up.json();
+      if (!up.ok || !upJson.url) {
+        throw new Error(String(upJson.error || "Upload impossible"));
+      }
+
+      const photo_url = String(upJson.url);
+      const updated = await patchArtist({ photo_url });
+      setArtist(updated);
+      setForm((prev) => (prev ? { ...prev, photo_url } : prev));
+      setSaveMsg("Photo mise à jour ✅");
+    } catch (err) {
+      setSaveMsg(err instanceof Error ? err.message : "Erreur photo");
+    } finally {
+      setPhotoBusy(false);
+      if (photoInputRef.current) photoInputRef.current.value = "";
+    }
+  }
+
+  async function clearPhoto() {
+    if (!confirm("Retirer la photo de cette fiche ?")) return;
+    setPhotoBusy(true);
+    setSaveMsg("");
+    try {
+      const updated = await patchArtist({ photo_url: "" });
+      setArtist(updated);
+      setForm((prev) => (prev ? { ...prev, photo_url: "" } : prev));
+      setSaveMsg("Photo retirée");
+    } catch (err) {
+      setSaveMsg(err instanceof Error ? err.message : "Erreur");
+    } finally {
+      setPhotoBusy(false);
+    }
   }
 
   async function deleteArtist() {
@@ -178,21 +250,60 @@ export default function ArtisteDetailPage() {
       </Link>
 
       <div className="panel p-5">
+        <input
+          ref={photoInputRef}
+          type="file"
+          accept="image/*,.heic,.heif"
+          capture="environment"
+          className="hidden"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) void uploadPhoto(file);
+          }}
+        />
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="flex gap-4">
-            {artist.photo_url ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={artist.photo_url}
-                alt={artist.stage_name}
-                className="h-20 w-20 rounded-2xl object-cover ring-1 ring-white/10"
-              />
-            ) : null}
+            <div className="relative shrink-0">
+              {artist.photo_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={artist.photo_url}
+                  alt={artist.stage_name}
+                  className="h-24 w-24 rounded-2xl object-cover ring-1 ring-white/10"
+                />
+              ) : (
+                <div className="flex h-24 w-24 items-center justify-center rounded-2xl bg-black/30 text-muted ring-1 ring-white/10">
+                  <Camera size={28} />
+                </div>
+              )}
+              <button
+                type="button"
+                disabled={photoBusy}
+                onClick={() => photoInputRef.current?.click()}
+                className="absolute -bottom-2 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-cyan px-2.5 py-1 text-[11px] font-semibold text-night shadow"
+              >
+                {photoBusy
+                  ? "…"
+                  : artist.photo_url
+                    ? "Changer"
+                    : "Ajouter"}
+              </button>
+            </div>
             <div>
               <h2 className="font-display text-2xl font-bold">
                 {artist.stage_name}
               </h2>
               <p className="text-muted">{artist.legal_name}</p>
+              {artist.photo_url ? (
+                <button
+                  type="button"
+                  className="mt-2 text-xs text-muted underline"
+                  disabled={photoBusy}
+                  onClick={() => void clearPhoto()}
+                >
+                  Retirer la photo
+                </button>
+              ) : null}
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -234,7 +345,6 @@ export default function ArtisteDetailPage() {
                 ["address_line", "Adresse"],
                 ["postal_code", "Code postal"],
                 ["city", "Ville"],
-                ["photo_url", "Photo (URL)"],
                 ["instagram_handle", "Instagram"],
                 ["tiktok_handle", "TikTok"],
               ] as const
@@ -250,6 +360,29 @@ export default function ArtisteDetailPage() {
                 />
               </div>
             ))}
+            <div className="md:col-span-2">
+              <label className="label-field">Photo</label>
+              <div className="flex flex-wrap items-center gap-2">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  disabled={photoBusy}
+                  onClick={() => photoInputRef.current?.click()}
+                >
+                  <Camera size={16} />
+                  {photoBusy ? "Upload…" : "Choisir / prendre une photo"}
+                </Button>
+                {form.photo_url ? (
+                  <span className="truncate text-xs text-muted">
+                    {form.photo_url.startsWith("data:")
+                      ? "Photo enregistrée"
+                      : form.photo_url}
+                  </span>
+                ) : (
+                  <span className="text-xs text-muted">Aucune photo</span>
+                )}
+              </div>
+            </div>
             <div>
               <label className="label-field">Niveau</label>
               <select

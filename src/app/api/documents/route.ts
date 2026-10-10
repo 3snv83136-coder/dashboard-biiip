@@ -24,6 +24,7 @@ export async function GET() {
     documents,
     shows: store.shows,
     artists: store.artists,
+    show_bookings: store.show_bookings,
   });
 }
 
